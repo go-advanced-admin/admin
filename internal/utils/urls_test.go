@@ -1,7 +1,6 @@
-package tests
+package utils
 
 import (
-	"github.com/go-advanced-admin/admin/internal/utils"
 	"testing"
 )
 
@@ -18,7 +17,7 @@ func TestISURLSafe(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if result := utils.IsURLSafe(tt.input); result != tt.expected {
+			if result := IsURLSafe(tt.input); result != tt.expected {
 				t.Errorf("%s: IsURLSafe(%q) = %v; expected %v", tt.name, tt.input, result, tt.expected)
 			}
 		})

@@ -1,7 +1,6 @@
-package tests
+package utils
 
 import (
-	"github.com/go-advanced-admin/admin/internal/utils"
 	"testing"
 )
 
@@ -58,7 +57,7 @@ func TestGetFieldValue(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			value, err := utils.GetFieldValue(tt.instance, tt.fieldName)
+			value, err := GetFieldValue(tt.instance, tt.fieldName)
 			if (err != nil) != tt.expectError {
 				t.Errorf("%s: unexpected error status: got %v, want %v", tt.name, err != nil, tt.expectError)
 				return

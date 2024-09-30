@@ -1,7 +1,6 @@
-package tests
+package utils
 
 import (
-	"github.com/go-advanced-admin/admin/internal/utils"
 	"testing"
 )
 
@@ -19,7 +18,7 @@ func TestHumanizeName(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if result := utils.HumanizeName(tt.input); result != tt.expected {
+			if result := HumanizeName(tt.input); result != tt.expected {
 				t.Errorf("%s: HumanizeName(%s) = %s; expected %s", tt.name, tt.input, result, tt.expected)
 			}
 		})
