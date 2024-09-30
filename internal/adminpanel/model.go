@@ -2,7 +2,6 @@ package adminpanel
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"reflect"
 )
@@ -10,6 +9,7 @@ import (
 type FieldConfig struct {
 	Name                 string
 	DisplayName          string
+	IncludeInListFetch   bool
 	IncludeInListDisplay bool
 }
 
@@ -59,7 +59,7 @@ func (m *Model) GetViewHandler() HandlerFunc {
 
 		var fieldsToFetch []string
 		for _, fieldConfig := range m.Fields {
-			if fieldConfig.IncludeInListDisplay {
+			if fieldConfig.IncludeInListFetch {
 				fieldsToFetch = append(fieldsToFetch, fieldConfig.Name)
 			}
 		}
@@ -73,8 +73,6 @@ func (m *Model) GetViewHandler() HandlerFunc {
 		if err != nil {
 			return http.StatusInternalServerError, err.Error()
 		}
-
-		log.Println(filteredInstances)
 
 		html, err := m.App.Panel.Config.Renderer.RenderTemplate("model.html", map[string]interface{}{"apps": apps, "model": m, "instances": filteredInstances})
 		if err != nil {

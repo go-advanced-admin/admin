@@ -58,9 +58,11 @@ func (a *App) RegisterModel(model interface{}) (*Model, error) {
 		fieldName := field.Name
 		fieldDisplayName := utils.HumanizeName(fieldName)
 		includeInList := true
+		includeInFetch := true
 
 		tag := field.Tag.Get("admin")
 		if tag != "" {
+			listFetchTagPresent := false
 			parsedTags := strings.Split(tag, ";")
 			for _, t := range parsedTags {
 				pair := strings.SplitN(t, ":", 2)
@@ -75,10 +77,26 @@ func (a *App) RegisterModel(model interface{}) (*Model, error) {
 					} else {
 						return nil, fmt.Errorf("invalid value for 'listDisplay' tag: %s", value)
 					}
+				case "listFetch":
+					listFetchTagPresent = true
+					if value == "exclude" {
+						includeInFetch = false
+					} else if value == "include" {
+						includeInFetch = true
+					} else {
+						return nil, fmt.Errorf("invalid value for 'listFetch' tag: %s", value)
+					}
 				case "displayName":
 					fieldDisplayName = value
 				default:
 					return nil, fmt.Errorf("unknown tag key: %s", key)
+				}
+			}
+			if !listFetchTagPresent {
+				if fieldName == "ID" {
+					includeInFetch = true
+				} else {
+					includeInFetch = includeInList
 				}
 			}
 		}
@@ -87,6 +105,7 @@ func (a *App) RegisterModel(model interface{}) (*Model, error) {
 			Name:                 fieldName,
 			DisplayName:          fieldDisplayName,
 			IncludeInListDisplay: includeInList,
+			IncludeInListFetch:   includeInFetch,
 		})
 	}
 
