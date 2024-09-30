@@ -32,3 +32,15 @@ func (p PermissionFunc) HasAppReadPermission(appName string, data interface{}) (
 	permissionRequest := PermissionRequest{AppName: &appName, Action: &action}
 	return p(permissionRequest, data)
 }
+
+func (p PermissionFunc) HasModelReadPermission(appName string, modelName string, data interface{}) (bool, error) {
+	action := ReadAction
+	permissionRequest := PermissionRequest{AppName: &appName, ModelName: &modelName, Action: &action}
+	return p(permissionRequest, data)
+}
+
+func (p PermissionFunc) HasModelCreatePermission(appName string, modelName string, data interface{}) (bool, error) {
+	action := CreateAction
+	permissionRequest := PermissionRequest{AppName: &appName, ModelName: &modelName, Action: &action}
+	return p(permissionRequest, data)
+}
