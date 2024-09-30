@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/glebarez/sqlite"
 	"github.com/go-advanced-admin/admin"
-	admingorm "github.com/go-advanced-admin/orm-gorm"
+	"github.com/go-advanced-admin/orm-gorm"
 	"github.com/go-advanced-admin/web-echo"
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
