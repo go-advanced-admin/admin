@@ -14,6 +14,12 @@ func TestHumanizeName(t *testing.T) {
 		{"Capitalize Start", "testName", "Test Name"},
 		{"Constant", "Test", "Test"},
 		{"Capitalized Word", "HTTPStatus", "HTTP Status"},
+		{"Single Word Lower", "test", "Test"},
+		{"Single Word Upper", "TEST", "TEST"},
+		{"Empty String", "", ""},
+		{"Single Character Lower", "t", "T"},
+		{"Single Character Upper", "T", "T"},
+		{"Mixed Case", "testNAME", "Test NAME"},
 	}
 
 	for _, tt := range tests {
