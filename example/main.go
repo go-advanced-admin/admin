@@ -1,25 +1,32 @@
 package main
 
 import (
+	"github.com/glebarez/sqlite"
 	"github.com/go-advanced-admin/admin"
+	admingorm "github.com/go-advanced-admin/orm-gorm"
 	"github.com/go-advanced-admin/web-echo"
 	"github.com/labstack/echo/v4"
+	"gorm.io/gorm"
 	"log"
 )
 
 type TestModel1 struct {
+	ID   uint `gorm:"primarykey"`
 	Name string
 }
 
 type TestModel2 struct {
+	ID   uint `gorm:"primarykey"`
 	Name string
 }
 
 type TestModel3 struct {
+	ID   uint `gorm:"primarykey"`
 	Name string
 }
 
 type TestModel4 struct {
+	ID   uint `gorm:"primarykey"`
 	Name string
 }
 
@@ -32,7 +39,19 @@ func main() {
 		return true, nil
 	}
 
-	panel := admin.NewPanel(nil, web, permissionFunc, nil)
+	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
+	if err != nil {
+		log.Fatalf("Failed to connect database: %v", err)
+	}
+
+	err = db.AutoMigrate(&TestModel1{}, &TestModel2{}, &TestModel3{}, &TestModel4{})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	orm := admingorm.NewIntegrator(db)
+
+	panel := admin.NewPanel(orm, web, permissionFunc, nil)
 
 	testApp1, err := panel.RegisterApp("TestApp1", "Test App 1")
 	if err != nil {

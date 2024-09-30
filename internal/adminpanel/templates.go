@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"embed"
 	"fmt"
+	"github.com/go-advanced-admin/admin/internal/utils"
 	"html/template"
 )
 
@@ -91,6 +92,13 @@ func (tr *DefaultTemplateRenderer) templateFuncs() template.FuncMap {
 				return tr.assetsFunc(string(*path))
 			}
 			return tr.assetsFunc(fileName)
+		},
+		"getFieldValue": func(instance interface{}, fieldName string) (interface{}, error) {
+			value, err := utils.GetFieldValue(instance, fieldName)
+			if err != nil {
+				return nil, err
+			}
+			return value, nil
 		},
 	}
 }

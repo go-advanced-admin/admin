@@ -2,14 +2,22 @@ package adminpanel
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 )
+
+type FieldConfig struct {
+	Name                 string
+	DisplayName          string
+	IncludeInListDisplay bool
+}
 
 type Model struct {
 	Name        string
 	DisplayName string
 	PTR         interface{}
 	App         *App
+	Fields      []FieldConfig
 }
 
 type AdminModelNameInterface interface {
@@ -43,7 +51,20 @@ func (m *Model) GetViewHandler() HandlerFunc {
 			return http.StatusInternalServerError, err.Error()
 		}
 
-		html, err := m.App.Panel.Config.Renderer.RenderTemplate("model.html", map[string]interface{}{"apps": apps, "model": m})
+		var fieldsToFetch []string
+		for _, fieldConfig := range m.Fields {
+			if fieldConfig.IncludeInListDisplay {
+				fieldsToFetch = append(fieldsToFetch, fieldConfig.Name)
+			}
+		}
+
+		instances, err := m.App.Panel.ORM.FetchInstancesOnlyFields(m.PTR, fieldsToFetch)
+		if err != nil {
+			return http.StatusInternalServerError, err.Error()
+		}
+		log.Println(instances)
+
+		html, err := m.App.Panel.Config.Renderer.RenderTemplate("model.html", map[string]interface{}{"apps": apps, "model": m, "instances": instances})
 		if err != nil {
 			return http.StatusInternalServerError, err.Error()
 		}
