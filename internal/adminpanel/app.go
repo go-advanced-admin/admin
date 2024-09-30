@@ -49,7 +49,9 @@ func (a *App) RegisterModel(model interface{}) (*Model, error) {
 	if _, exists := a.Models[name]; exists {
 		return nil, fmt.Errorf("admin model '%s' already exists in app '%s'. Models cannot be registered more than once", name, a.Name)
 	}
-	a.Models[name] = &Model{Name: name, DisplayName: displayName, PTR: model, App: a}
+	modelInstance := &Model{Name: name, DisplayName: displayName, PTR: model, App: a}
+	a.Panel.Web.HandleRoute("GET", a.Panel.Config.GetPrefix()+modelInstance.GetLink(), modelInstance.GetViewHandler())
+	a.Models[name] = modelInstance
 	return a.Models[name], nil
 }
 

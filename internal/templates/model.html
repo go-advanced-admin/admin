@@ -2,11 +2,12 @@
     <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>{{ .admin.Config.Name }}</title>
+        <title>{{ .model.DisplayName }} administration</title>
         <link rel="stylesheet" href="{{ assetPath "sample.css" }}">
     </head>
     <body>
-        <h1>{{ .admin.Config.Name }}</h1>
+        <p><a href="{{ .model.App.Panel.GetFullLink }}">Home</a> > <a href="{{ .model.App.GetFullLink }}">{{ .model.App.DisplayName }}</a> > {{ .model.DisplayName }}</p>
+        <h2>Models Sidepanel</h2>
         <ul>
             {{ range .apps }}
                 <li><a href="{{ .app.GetFullLink }}">{{ .app.DisplayName }}</a>
