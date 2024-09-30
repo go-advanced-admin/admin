@@ -11,6 +11,10 @@ func GetFieldValue(instance interface{}, fieldName string) (interface{}, error) 
 		val = val.Elem()
 	}
 
+	if val.Kind() != reflect.Struct {
+		return nil, fmt.Errorf("instance is not a struct or pointer to a struct")
+	}
+
 	fieldValue := val.FieldByName(fieldName)
 	if !fieldValue.IsValid() {
 		return nil, fmt.Errorf("field %s not found", fieldName)
