@@ -70,6 +70,12 @@ func (ap *AdminPanel) RegisterApp(name, displayName string) (*App, error) {
 		return nil, fmt.Errorf("admin app name '%s' is not URL safe", name)
 	}
 
-	ap.Apps[name] = &App{Name: name, DisplayName: displayName, Models: make(map[string]*Model)}
+	app := &App{Name: name, DisplayName: displayName, Models: make(map[string]*Model), Panel: ap}
+	ap.Apps[name] = app
+	ap.Web.HandleRoute("GET", ap.Config.GetPrefix()+app.GetLink(), app.GetHandler())
 	return ap.Apps[name], nil
+}
+
+func (ap *AdminPanel) GetFullLink() string {
+	return ap.Config.GetLink("")
 }
