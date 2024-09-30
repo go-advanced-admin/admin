@@ -2,14 +2,14 @@ package adminpanel
 
 import (
 	"fmt"
+	"github.com/go-advanced-admin/admin/internal/utils"
 	"reflect"
-	"strings"
-	"unicode"
 )
 
 type App struct {
-	Name   string
-	Models map[string]*Model
+	Name        string
+	DisplayName string
+	Models      map[string]*Model
 }
 
 func (a *App) RegisterModel(model interface{}) (*Model, error) {
@@ -29,23 +29,24 @@ func (a *App) RegisterModel(model interface{}) (*Model, error) {
 	if ok {
 		name = namer.AdminName()
 	} else {
-		name = humanizeName(modelType.Name())
+		name = modelType.Name()
+	}
+
+	if !utils.IsURLSafe(name) {
+		return nil, fmt.Errorf("admin model '%s' name is not URL safe", name)
+	}
+
+	var displayName string
+	displayNamer, ok := model.(AdminModelDisplayNameInterface)
+	if ok {
+		displayName = displayNamer.AdminDisplayName()
+	} else {
+		displayName = utils.HumanizeName(name)
 	}
 
 	if _, exists := a.Models[name]; exists {
 		return nil, fmt.Errorf("admin model '%s' already exists in app '%s'. Models cannot be registered more than once", name, a.Name)
 	}
-	a.Models[name] = &Model{Name: name, PTR: model}
+	a.Models[name] = &Model{Name: name, DisplayName: displayName, PTR: model}
 	return a.Models[name], nil
-}
-
-func humanizeName(name string) string {
-	var result []rune
-	for i, r := range name {
-		if i > 0 && unicode.IsUpper(r) && !(unicode.IsUpper(r) && unicode.IsUpper(rune(name[i-1]))) {
-			result = append(result, ' ')
-		}
-		result = append(result, r)
-	}
-	return strings.TrimSpace(string(result))
 }
