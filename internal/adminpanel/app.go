@@ -11,6 +11,7 @@ type App struct {
 	Name        string
 	DisplayName string
 	Models      map[string]*Model
+	ModelsSlice []*Model
 	Panel       *AdminPanel
 }
 
@@ -51,6 +52,7 @@ func (a *App) RegisterModel(model interface{}) (*Model, error) {
 	}
 	modelInstance := &Model{Name: name, DisplayName: displayName, PTR: model, App: a}
 	a.Panel.Web.HandleRoute("GET", a.Panel.Config.GetPrefix()+modelInstance.GetLink(), modelInstance.GetViewHandler())
+	a.ModelsSlice = append(a.ModelsSlice, modelInstance)
 	a.Models[name] = modelInstance
 	return a.Models[name], nil
 }

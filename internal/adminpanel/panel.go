@@ -9,6 +9,7 @@ import (
 
 type AdminPanel struct {
 	Apps              map[string]*App
+	AppsSlice         []*App
 	PermissionChecker PermissionFunc
 	ORM               ORMIntegrator
 	Web               WebIntegrator
@@ -21,6 +22,7 @@ func NewAdminPanel(orm ORMIntegrator, web WebIntegrator, permissionsCheck Permis
 	}
 	admin := AdminPanel{
 		Apps:              make(map[string]*App),
+		AppsSlice:         make([]*App, 0),
 		PermissionChecker: permissionsCheck,
 		ORM:               orm,
 		Web:               web,
@@ -70,8 +72,9 @@ func (ap *AdminPanel) RegisterApp(name, displayName string) (*App, error) {
 		return nil, fmt.Errorf("admin app name '%s' is not URL safe", name)
 	}
 
-	app := &App{Name: name, DisplayName: displayName, Models: make(map[string]*Model), Panel: ap}
+	app := &App{Name: name, DisplayName: displayName, Models: make(map[string]*Model), ModelsSlice: make([]*Model, 0), Panel: ap}
 	ap.Apps[name] = app
+	ap.AppsSlice = append(ap.AppsSlice, app)
 	ap.Web.HandleRoute("GET", ap.Config.GetPrefix()+app.GetLink(), app.GetHandler())
 	return ap.Apps[name], nil
 }
