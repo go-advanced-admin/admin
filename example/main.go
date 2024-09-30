@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/go-advanced-admin/admin"
 	"github.com/go-advanced-admin/web-echo"
+	"github.com/labstack/echo/v4"
 	"log"
 )
 
