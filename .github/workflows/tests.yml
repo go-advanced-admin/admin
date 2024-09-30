@@ -40,10 +40,5 @@ jobs:
       - name: Install dependencies
         run: go mod download
 
-      - name: Run tests with Docker
-        uses: addnab/docker-run-action@v3
-        with:
-          image: golang:1.23
-          options: --workdir /app
-          run: |
-            go test ./...
+      - name: Run tests
+        run: go test -v ./...
