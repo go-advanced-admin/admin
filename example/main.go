@@ -51,7 +51,10 @@ func main() {
 
 	orm := admingorm.NewIntegrator(db)
 
-	panel := admin.NewPanel(orm, web, permissionFunc, nil)
+	panel, err := admin.NewPanel(orm, web, permissionFunc, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	testApp1, err := panel.RegisterApp("TestApp1", "Test App 1")
 	if err != nil {

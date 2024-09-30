@@ -16,7 +16,16 @@ type AdminPanel struct {
 	Config            AdminConfig
 }
 
-func NewAdminPanel(orm ORMIntegrator, web WebIntegrator, permissionsCheck PermissionFunc, config *AdminConfig) *AdminPanel {
+func NewAdminPanel(orm ORMIntegrator, web WebIntegrator, permissionsCheck PermissionFunc, config *AdminConfig) (*AdminPanel, error) {
+	if orm == nil {
+		return nil, fmt.Errorf("orm integrator cannot be nil")
+	}
+	if web == nil {
+		return nil, fmt.Errorf("web integrator cannot be nil")
+	}
+	if permissionsCheck == nil {
+		return nil, fmt.Errorf("permissions check function cannot be nil")
+	}
 	if config == nil {
 		config = &DefaultAdminConfig
 	}
@@ -37,7 +46,7 @@ func NewAdminPanel(orm ORMIntegrator, web WebIntegrator, permissionsCheck Permis
 	web.ServeAssets(config.AssetsPrefix, config.Renderer)
 	web.HandleRoute("GET", config.GetPrefix(), admin.GetHandler())
 
-	return &admin
+	return &admin, nil
 }
 
 func (ap *AdminPanel) GetHandler() HandlerFunc {

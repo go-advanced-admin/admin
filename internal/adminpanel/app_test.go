@@ -10,7 +10,10 @@ type TestModel1 struct {
 }
 
 func TestRegisterModel(t *testing.T) {
-	panel := NewAdminPanel(&MockORMIntegrator{}, &MockWebIntegrator{}, MockPermissionFunc, nil)
+	panel, err := NewAdminPanel(&MockORMIntegrator{}, &MockWebIntegrator{}, MockPermissionFunc, nil)
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
 
 	testApp, err := panel.RegisterApp("TestApp", "Test App")
 	if err != nil {
