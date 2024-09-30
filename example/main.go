@@ -34,7 +34,7 @@ func main() {
 
 	panel := admin.NewPanel(nil, web, permissionFunc, nil)
 
-	testApp1, err := panel.RegisterApp("Test App 1")
+	testApp1, err := panel.RegisterApp("TestApp1", "Test App 1")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -48,7 +48,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	testApp2, err := panel.RegisterApp("Test App 2")
+	testApp2, err := panel.RegisterApp("TestApp2", "Test App 2")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -68,5 +68,4 @@ func main() {
 	}
 
 	e.Logger.Fatal(e.Start(":8080"))
-
 }
