@@ -90,7 +90,14 @@ func (a *App) RegisterModel(model interface{}) (*Model, error) {
 		})
 	}
 
-	modelInstance := &Model{Name: name, DisplayName: displayName, PTR: model, App: a, Fields: fields}
+	primaryKeyGetter, err := GetPrimaryKeyGetter(model)
+	if err != nil {
+		return nil, fmt.Errorf("error determining primary key for model '%s': %w", name, err)
+	}
+
+	modelInstance := &Model{
+		Name: name, DisplayName: displayName, PTR: model, App: a, Fields: fields, PrimaryKeyGetter: primaryKeyGetter,
+	}
 	a.Panel.Web.HandleRoute("GET", a.Panel.Config.GetPrefix()+modelInstance.GetLink(), modelInstance.GetViewHandler())
 	a.ModelsSlice = append(a.ModelsSlice, modelInstance)
 	a.Models[name] = modelInstance
