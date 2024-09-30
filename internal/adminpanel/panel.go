@@ -3,6 +3,7 @@ package adminpanel
 import (
 	"fmt"
 	"github.com/go-advanced-admin/admin/internal"
+	"github.com/go-advanced-admin/admin/internal/utils"
 	"net/http"
 )
 
@@ -54,10 +55,15 @@ func GetMainPanelHandler(panel *AdminPanel) HandlerFunc {
 	}
 }
 
-func (ap *AdminPanel) RegisterApp(name string) (*App, error) {
+func (ap *AdminPanel) RegisterApp(name, displayName string) (*App, error) {
 	if _, exists := ap.Apps[name]; exists {
 		return nil, fmt.Errorf("admin app '%s' already exists. Apps cannot be registered more than once", name)
 	}
-	ap.Apps[name] = &App{Name: name, Models: make(map[string]*Model)}
+
+	if !utils.IsURLSafe(name) {
+		return nil, fmt.Errorf("admin app name '%s' is not URL safe", name)
+	}
+
+	ap.Apps[name] = &App{Name: name, DisplayName: displayName, Models: make(map[string]*Model)}
 	return ap.Apps[name], nil
 }
