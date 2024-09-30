@@ -40,7 +40,7 @@ func NewAdminPanel(orm ORMIntegrator, web WebIntegrator, permissionsCheck Permis
 func GetMainPanelHandler(panel *AdminPanel) HandlerFunc {
 	return func(data interface{}) (uint, string) {
 		action := "view"
-		allowed, err := panel.PermissionChecker(PermissionRequest{Action: &action}, data)
+		allowed, err := panel.PermissionChecker.HasPermission(PermissionRequest{Action: &action}, data)
 		if err != nil {
 			return http.StatusInternalServerError, err.Error()
 		}

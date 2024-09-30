@@ -8,3 +8,7 @@ type PermissionRequest struct {
 }
 
 type PermissionFunc func(PermissionRequest, interface{}) (bool, error)
+
+func (p PermissionFunc) HasPermission(r PermissionRequest, instance interface{}) (bool, error) {
+	return p(r, instance)
+}
