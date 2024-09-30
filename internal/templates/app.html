@@ -13,7 +13,7 @@
         <ul>
             {{ range .models }}
                 {{ if .permissions.Read }}
-                    <li>{{ .model.DisplayName }}  -- View {{ if .permissions.Update }}-- Update {{ end }}{{ if .permissions.Create }} -- Add{{ end }}</li>
+                    <li>{{ .model.DisplayName }}  -- View{{ if .permissions.Create }} -- Add{{ end }}</li>
                 {{ end }}
             {{ end }}
         </ul>
