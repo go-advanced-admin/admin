@@ -9,6 +9,11 @@ type PermissionRequest struct {
 
 type PermissionFunc func(PermissionRequest, interface{}) (bool, error)
 
-func (p PermissionFunc) HasPermission(r PermissionRequest, instance interface{}) (bool, error) {
-	return p(r, instance)
+func (p PermissionFunc) HasPermission(r PermissionRequest, data interface{}) (bool, error) {
+	return p(r, data)
+}
+
+func (p PermissionFunc) HasViewPermission(data interface{}) (bool, error) {
+	action := "view"
+	return p(PermissionRequest{Action: &action}, data)
 }
