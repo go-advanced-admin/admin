@@ -7,17 +7,20 @@ import (
 
 func TestISURLSafe(t *testing.T) {
 	tests := []struct {
+		name     string
 		input    string
 		expected bool
 	}{
-		{"SafeName", true},
-		{"Unsafe Name", false},
-		{"Name_With-Special.Characters", true},
+		{"Safe", "SafeName", true},
+		{"Space", "Unsafe Name", false},
+		{"Safe with Special Chars", "Name_With-Special.Characters", true},
 	}
 
 	for _, tt := range tests {
-		if result := utils.IsURLSafe(tt.input); result != tt.expected {
-			t.Errorf("IsURLSafe(%q) = %v; expected %v", tt.input, result, tt.expected)
-		}
+		t.Run(tt.name, func(t *testing.T) {
+			if result := utils.IsURLSafe(tt.input); result != tt.expected {
+				t.Errorf("%s: IsURLSafe(%q) = %v; expected %v", tt.name, tt.input, result, tt.expected)
+			}
+		})
 	}
 }
