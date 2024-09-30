@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sample HTML File</title>
+    <link rel="stylesheet" href="{{ assetPath "sample.css" }}">
+</head>
+<body>
+<h1>{{ .admin.Config.Name }}</h1>
+<ul>
+    {{ range $appName, $app := .admin.Apps }}
+        <li> {{ $appName }}
+            <ul>
+                {{ range $modelName, $_ := $app.Models}}
+                    <li>{{ $modelName }}</li>
+                {{ end }}
+            </ul>
+        </li>
+    {{ end }}
+</ul>
+</body>
+</html>
