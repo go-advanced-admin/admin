@@ -8,11 +8,11 @@
 <body>
 <h1>{{ .admin.Config.Name }}</h1>
 <ul>
-    {{ range $appName, $app := .admin.Apps }}
-        <li> {{ $appName }}
+    {{ range $_, $app := .admin.Apps }}
+        <li> {{ $app.DisplayName }}
             <ul>
-                {{ range $modelName, $_ := $app.Models}}
-                    <li>{{ $modelName }}</li>
+                {{ range $_, $model := $app.Models}}
+                    <li>{{ $model.DisplayName }}</li>
                 {{ end }}
             </ul>
         </li>
