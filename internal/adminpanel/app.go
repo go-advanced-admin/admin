@@ -5,6 +5,7 @@ import (
 	"github.com/go-advanced-admin/admin/internal/utils"
 	"net/http"
 	"reflect"
+	"strings"
 )
 
 type App struct {
@@ -50,7 +51,46 @@ func (a *App) RegisterModel(model interface{}) (*Model, error) {
 	if _, exists := a.Models[name]; exists {
 		return nil, fmt.Errorf("admin model '%s' already exists in app '%s'. Models cannot be registered more than once", name, a.Name)
 	}
-	modelInstance := &Model{Name: name, DisplayName: displayName, PTR: model, App: a}
+
+	var fields []FieldConfig
+	for i := 0; i < modelType.NumField(); i++ {
+		field := modelType.Field(i)
+		fieldName := field.Name
+		fieldDisplayName := utils.HumanizeName(fieldName)
+		includeInList := true
+
+		tag := field.Tag.Get("admin")
+		if tag != "" {
+			parsedTags := strings.Split(tag, ";")
+			for _, t := range parsedTags {
+				pair := strings.SplitN(t, ":", 2)
+				key, value := pair[0], pair[1]
+
+				switch key {
+				case "listDisplay":
+					if value == "exclude" {
+						includeInList = false
+					} else if value == "include" {
+						includeInList = true
+					} else {
+						return nil, fmt.Errorf("invalid value for 'listDisplay' tag: %s", value)
+					}
+				case "displayName":
+					fieldDisplayName = value
+				default:
+					return nil, fmt.Errorf("unknown tag key: %s", key)
+				}
+			}
+		}
+
+		fields = append(fields, FieldConfig{
+			Name:                 fieldName,
+			DisplayName:          fieldDisplayName,
+			IncludeInListDisplay: includeInList,
+		})
+	}
+
+	modelInstance := &Model{Name: name, DisplayName: displayName, PTR: model, App: a, Fields: fields}
 	a.Panel.Web.HandleRoute("GET", a.Panel.Config.GetPrefix()+modelInstance.GetLink(), modelInstance.GetViewHandler())
 	a.ModelsSlice = append(a.ModelsSlice, modelInstance)
 	a.Models[name] = modelInstance

@@ -85,3 +85,6 @@ vendor/
 
 # Go workspace specific directories (for GOPATH)
 Godeps/
+
+
+*db

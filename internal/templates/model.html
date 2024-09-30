@@ -21,5 +21,18 @@
                 </li>
             {{ end }}
         </ul>
+        <h2>{{ .Model.DisplayName }} Instances</h2>
+        <ul>
+            {{  range .instances }}
+                <li>
+                    {{- $instance := . -}}
+                    {{- range $index, $fieldConfig := $.model.Fields -}}
+                        {{- if $fieldConfig.IncludeInListDisplay -}}
+                            {{ $fieldConfig.DisplayName }}: {{ getFieldValue $instance $fieldConfig.Name }},
+                        {{- end -}}
+                    {{- end -}}
+                </li>
+            {{ end }}
+        </ul>
     </body>
 </html>
