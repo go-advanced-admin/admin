@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"strconv"
 )
 
 type FieldConfig struct {
@@ -44,6 +45,26 @@ func (m *Model) GetFullLink() string {
 
 func (m *Model) GetViewHandler() HandlerFunc {
 	return func(data interface{}) (uint, string) {
+		var page, perPage uint
+		pageQuery := m.App.Panel.Web.GetQueryParam(data, "page")
+		perPageQuery := m.App.Panel.Web.GetQueryParam(data, "perPage")
+
+		if p, err := strconv.Atoi(pageQuery); err == nil {
+			page = uint(p)
+		} else {
+			page = 1
+		}
+
+		if pp, err := strconv.Atoi(perPageQuery); err == nil {
+			perPage = uint(pp)
+		} else {
+			perPage = m.App.Panel.Config.DefaultInstancesPerPage
+		}
+
+		if perPage < 10 {
+			perPage = 10
+		}
+
 		allowed, err := m.App.Panel.PermissionChecker.HasModelReadPermission(m.App.Name, m.Name, data)
 		if err != nil {
 			return http.StatusInternalServerError, err.Error()
@@ -74,7 +95,30 @@ func (m *Model) GetViewHandler() HandlerFunc {
 			return http.StatusInternalServerError, err.Error()
 		}
 
-		html, err := m.App.Panel.Config.Renderer.RenderTemplate("model.html", map[string]interface{}{"apps": apps, "model": m, "instances": filteredInstances})
+		totalCount := uint(len(filteredInstances))
+		totalPages := (totalCount + perPage - 1) / perPage
+
+		startIndex := (page - 1) * perPage
+		endIndex := startIndex + perPage
+
+		if startIndex > totalCount {
+			startIndex = totalCount
+		}
+		if endIndex > totalCount {
+			endIndex = totalCount
+		}
+
+		pagedInstances := filteredInstances[startIndex:endIndex]
+
+		html, err := m.App.Panel.Config.Renderer.RenderTemplate("model.html", map[string]interface{}{
+			"apps":        apps,
+			"model":       m,
+			"instances":   pagedInstances,
+			"totalCount":  totalCount,
+			"totalPages":  totalPages,
+			"currentPage": page,
+			"perPage":     perPage,
+		})
 		if err != nil {
 			return http.StatusInternalServerError, err.Error()
 		}

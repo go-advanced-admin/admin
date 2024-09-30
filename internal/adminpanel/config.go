@@ -1,18 +1,20 @@
 package adminpanel
 
 type AdminConfig struct {
-	Name         string
-	Prefix       string
-	Renderer     TemplateRenderer
-	AssetsPrefix string
-	GroupPrefix  string
+	Name                    string
+	Prefix                  string
+	Renderer                TemplateRenderer
+	AssetsPrefix            string
+	GroupPrefix             string
+	DefaultInstancesPerPage uint
 }
 
 var DefaultAdminConfig = AdminConfig{
-	Name:         "Site Administration",
-	Prefix:       "admin",
-	AssetsPrefix: "admin-assets",
-	Renderer:     NewDefaultTemplateRenderer(),
+	Name:                    "Site Administration",
+	Prefix:                  "admin",
+	AssetsPrefix:            "admin-assets",
+	Renderer:                NewDefaultTemplateRenderer(),
+	DefaultInstancesPerPage: 10,
 }
 
 func (c *AdminConfig) GetPrefix() string {

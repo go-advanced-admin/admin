@@ -39,3 +39,8 @@ func (i *Integrator) ServeAssets(prefix string, renderer admin.TemplateRenderer)
 		return c.Blob(http.StatusOK, contentType, fileData)
 	})
 }
+
+func (i *Integrator) GetQueryParam(ctx interface{}, name string) string {
+	ec := ctx.(echo.Context)
+	return ec.QueryParam(name)
+}
