@@ -7,18 +7,21 @@ import (
 
 func TestHumanizeName(t *testing.T) {
 	tests := []struct {
+		name     string
 		input    string
 		expected string
 	}{
-		{"TestName", "Test Name"},
-		{"testName", "Test Name"},
-		{"Test", "Test"},
-		{"HTTPStatus", "HTTP Status"},
+		{"Spaces", "TestName", "Test Name"},
+		{"Capitalize Start", "testName", "Test Name"},
+		{"Constant", "Test", "Test"},
+		{"Capitalized Word", "HTTPStatus", "HTTP Status"},
 	}
 
 	for _, tt := range tests {
-		if result := utils.HumanizeName(tt.input); result != tt.expected {
-			t.Errorf("HumanizeName(%s) = %s; expected %s", tt.input, result, tt.expected)
-		}
+		t.Run(tt.name, func(t *testing.T) {
+			if result := utils.HumanizeName(tt.input); result != tt.expected {
+				t.Errorf("HumanizeName(%s) = %s; expected %s", tt.input, result, tt.expected)
+			}
+		})
 	}
 }
