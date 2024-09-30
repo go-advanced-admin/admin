@@ -67,7 +67,7 @@ func (p PermissionFunc) HasModelDeletePermission(appName string, modelName strin
 func GetModelsWithReadPermissions(app *App, data interface{}) ([]map[string]interface{}, error) {
 	modelsSlice := make([]map[string]interface{}, 0)
 
-	for _, model := range app.Models {
+	for _, model := range app.ModelsSlice {
 		modelMap := make(map[string]interface{})
 		modelReadAllowed, err := app.Panel.PermissionChecker.HasModelReadPermission(app.Name, model.Name, data)
 		if err != nil {
@@ -108,9 +108,9 @@ func GetModelsWithReadPermissions(app *App, data interface{}) ([]map[string]inte
 
 func GetAppsWithReadPermissions(panel *AdminPanel, data interface{}) ([]map[string]interface{}, error) {
 	apps := make([]map[string]interface{}, 0)
-	for name, app := range panel.Apps {
+	for _, app := range panel.AppsSlice {
 		appMap := make(map[string]interface{})
-		readAllowed, err := panel.PermissionChecker.HasAppReadPermission(name, data)
+		readAllowed, err := panel.PermissionChecker.HasAppReadPermission(app.Name, data)
 		if err != nil {
 			return nil, err
 		}
