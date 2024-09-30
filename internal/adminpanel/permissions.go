@@ -12,7 +12,7 @@ const (
 type PermissionRequest struct {
 	AppName    *string
 	ModelName  *string
-	InstanceID *interface{}
+	InstanceID interface{}
 	Action     *Action
 }
 
@@ -61,6 +61,12 @@ func (p PermissionFunc) HasModelUpdatePermission(appName string, modelName strin
 func (p PermissionFunc) HasModelDeletePermission(appName string, modelName string, data interface{}) (bool, error) {
 	action := DeleteAction
 	permissionRequest := PermissionRequest{AppName: &appName, ModelName: &modelName, Action: &action}
+	return p(permissionRequest, data)
+}
+
+func (p PermissionFunc) HasInstanceReadPermission(appName, modelName string, instanceID interface{}, data interface{}) (bool, error) {
+	action := ReadAction
+	permissionRequest := PermissionRequest{AppName: &appName, ModelName: &modelName, Action: &action, InstanceID: instanceID}
 	return p(permissionRequest, data)
 }
 
