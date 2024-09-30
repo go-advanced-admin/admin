@@ -33,14 +33,14 @@ func NewAdminPanel(orm ORMIntegrator, web WebIntegrator, permissionsCheck Permis
 	admin.Config.Renderer.RegisterAssetsFunc(admin.Config.GetAssetLink)
 
 	web.ServeAssets(config.AssetsPrefix, config.Renderer)
-	web.HandleRoute("GET", config.GetPrefix(), GetMainPanelHandler(&admin))
+	web.HandleRoute("GET", config.GetPrefix(), admin.GetHandler())
 
 	return &admin
 }
 
-func GetMainPanelHandler(panel *AdminPanel) HandlerFunc {
+func (ap *AdminPanel) GetHandler() HandlerFunc {
 	return func(data interface{}) (uint, string) {
-		allowed, err := panel.PermissionChecker.HasReadPermission(data)
+		allowed, err := ap.PermissionChecker.HasReadPermission(data)
 		if err != nil {
 			return http.StatusInternalServerError, err.Error()
 		}
@@ -48,12 +48,12 @@ func GetMainPanelHandler(panel *AdminPanel) HandlerFunc {
 			return http.StatusForbidden, "Forbidden"
 		}
 
-		apps, err := GetAppsWithReadPermissions(panel, data)
+		apps, err := GetAppsWithReadPermissions(ap, data)
 		if err != nil {
 			return http.StatusInternalServerError, err.Error()
 		}
 
-		html, err := panel.Config.Renderer.RenderTemplate("root.html", map[string]interface{}{"admin": panel, "apps": apps})
+		html, err := ap.Config.Renderer.RenderTemplate("root.html", map[string]interface{}{"admin": ap, "apps": apps})
 		if err != nil {
 			return http.StatusInternalServerError, err.Error()
 		}
