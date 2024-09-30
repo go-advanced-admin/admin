@@ -8,11 +8,13 @@
 <body>
 <h1>{{ .admin.Config.Name }}</h1>
 <ul>
-    {{ range $_, $app := .admin.Apps }}
-        <li> {{ $app.DisplayName }}
+    {{ range .apps }}
+        <li> {{ .app.DisplayName }}
             <ul>
-                {{ range $_, $model := $app.Models}}
-                    <li>{{ $model.DisplayName }}</li>
+                {{ range .models }}
+                    {{ if .permissions.Read }}
+                        <li>{{ .model.DisplayName }}</li>
+                    {{ end }}
                 {{ end }}
             </ul>
         </li>

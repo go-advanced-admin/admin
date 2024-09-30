@@ -47,7 +47,13 @@ func GetMainPanelHandler(panel *AdminPanel) HandlerFunc {
 		if !allowed {
 			return http.StatusForbidden, "Forbidden"
 		}
-		html, err := panel.Config.Renderer.RenderTemplate("root.html", map[string]interface{}{"admin": panel})
+
+		apps, err := GetAppsWithReadPermissions(panel, data)
+		if err != nil {
+			return http.StatusInternalServerError, err.Error()
+		}
+
+		html, err := panel.Config.Renderer.RenderTemplate("root.html", map[string]interface{}{"admin": panel, "apps": apps})
 		if err != nil {
 			return http.StatusInternalServerError, err.Error()
 		}
