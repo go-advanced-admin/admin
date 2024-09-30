@@ -3,6 +3,7 @@ package adminpanel
 import (
 	"fmt"
 	"github.com/go-advanced-admin/admin/internal/utils"
+	"net/http"
 	"reflect"
 )
 
@@ -10,6 +11,7 @@ type App struct {
 	Name        string
 	DisplayName string
 	Models      map[string]*Model
+	Panel       *AdminPanel
 }
 
 func (a *App) RegisterModel(model interface{}) (*Model, error) {
@@ -47,6 +49,37 @@ func (a *App) RegisterModel(model interface{}) (*Model, error) {
 	if _, exists := a.Models[name]; exists {
 		return nil, fmt.Errorf("admin model '%s' already exists in app '%s'. Models cannot be registered more than once", name, a.Name)
 	}
-	a.Models[name] = &Model{Name: name, DisplayName: displayName, PTR: model}
+	a.Models[name] = &Model{Name: name, DisplayName: displayName, PTR: model, App: a}
 	return a.Models[name], nil
+}
+
+func (a *App) GetHandler() HandlerFunc {
+	return func(data interface{}) (uint, string) {
+		allowed, err := a.Panel.PermissionChecker.HasAppReadPermission(a.Name, data)
+		if err != nil {
+			return http.StatusInternalServerError, err.Error()
+		}
+		if !allowed {
+			return http.StatusForbidden, "Forbidden"
+		}
+
+		models, err := GetModelsWithReadPermissions(a, data)
+		if err != nil {
+			return http.StatusInternalServerError, err.Error()
+		}
+
+		html, err := a.Panel.Config.Renderer.RenderTemplate("app.html", map[string]interface{}{"app": a, "models": models})
+		if err != nil {
+			return http.StatusInternalServerError, err.Error()
+		}
+		return http.StatusOK, html
+	}
+}
+
+func (a *App) GetLink() string {
+	return fmt.Sprintf("/%s", a.Name)
+}
+
+func (a *App) GetFullLink() string {
+	return a.Panel.Config.GetLink(a.GetLink())
 }

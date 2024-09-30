@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ .app.DisplayName }} administration</title>
+    <link rel="stylesheet" href="{{ assetPath "sample.css" }}">
+</head>
+<body>
+<p><a href="{{ .app.Panel.GetFullLink }}">Home</a> > {{ .app.DisplayName }}</p>
+<h1>{{ .app.DisplayName }} administration</h1>
+<ul>
+    <li> {{ .app.DisplayName }}
+        <ul>
+            {{ range .models }}
+                {{ if .permissions.Read }}
+                    <li>{{ .model.DisplayName }}  -- View {{ if .permissions.Update }}-- Update {{ end }}{{ if .permissions.Create }} -- Add{{ end }}</li>
+                {{ end }}
+            {{ end }}
+        </ul>
+    </li>
+</ul>
+</body>
+</html>

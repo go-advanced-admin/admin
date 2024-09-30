@@ -9,7 +9,7 @@
 <h1>{{ .admin.Config.Name }}</h1>
 <ul>
     {{ range .apps }}
-        <li> {{ .app.DisplayName }}
+        <li><a href="{{ .app.GetFullLink }}">{{ .app.DisplayName }}</a>
             <ul>
                 {{ range .models }}
                     {{ if .permissions.Read }}
