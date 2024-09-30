@@ -1,10 +1,19 @@
 package adminpanel
 
+type Action string
+
+const (
+	ReadAction   Action = "read"
+	CreateAction Action = "create"
+	UpdateAction Action = "update"
+	DeleteAction Action = "delete"
+)
+
 type PermissionRequest struct {
 	AppName    *string
 	ModelName  *string
 	InstanceID *interface{}
-	Action     *string
+	Action     *Action
 }
 
 type PermissionFunc func(PermissionRequest, interface{}) (bool, error)
@@ -13,7 +22,13 @@ func (p PermissionFunc) HasPermission(r PermissionRequest, data interface{}) (bo
 	return p(r, data)
 }
 
-func (p PermissionFunc) HasViewPermission(data interface{}) (bool, error) {
-	action := "view"
+func (p PermissionFunc) HasReadPermission(data interface{}) (bool, error) {
+	action := ReadAction
 	return p(PermissionRequest{Action: &action}, data)
+}
+
+func (p PermissionFunc) HasAppReadPermission(appName string, data interface{}) (bool, error) {
+	action := ReadAction
+	permissionRequest := PermissionRequest{AppName: &appName, Action: &action}
+	return p(permissionRequest, data)
 }
