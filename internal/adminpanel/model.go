@@ -133,7 +133,21 @@ func (m *Model) GetViewHandler() HandlerFunc {
 
 		cleanInstances := make([]Instance, len(pagedInstances))
 		for i, instance := range pagedInstances {
-			cleanInstance := Instance{InstanceID: m.PrimaryKeyGetter(instance), Data: instance, Model: m}
+			id := m.PrimaryKeyGetter(instance)
+			updateAllowed, err := m.App.Panel.PermissionChecker.HasInstanceUpdatePermission(m.App.Name, m.Name, id, data)
+			if err != nil {
+				return GetErrorHTML(http.StatusInternalServerError, err)
+			}
+			deleteAllowed, err := m.App.Panel.PermissionChecker.HasInstanceDeletePermission(m.App.Name, m.Name, id, data)
+			if err != nil {
+				return GetErrorHTML(http.StatusInternalServerError, err)
+			}
+			cleanInstance := Instance{
+				InstanceID:  id,
+				Data:        instance,
+				Model:       m,
+				Permissions: Permissions{Read: true, Update: updateAllowed, Delete: deleteAllowed},
+			}
 			cleanInstances[i] = cleanInstance
 		}
 
@@ -155,7 +169,6 @@ func (m *Model) GetViewHandler() HandlerFunc {
 
 func GetPrimaryKeyGetter(model interface{}) (func(interface{}) interface{}, error) {
 	modelType := reflect.TypeOf(model)
-	modelValue := reflect.ValueOf(model)
 
 	if _, implements := model.(AdminModelGetIDInterface); implements {
 		return func(instance interface{}) interface{} {
@@ -165,7 +178,17 @@ func GetPrimaryKeyGetter(model interface{}) (func(interface{}) interface{}, erro
 
 	if idField, found := modelType.Elem().FieldByName("ID"); found {
 		return func(instance interface{}) interface{} {
-			return modelValue.Elem().FieldByName(idField.Name).Interface()
+			instValue := reflect.ValueOf(instance)
+
+			if instValue.Kind() == reflect.Ptr {
+				instValue = instValue.Elem()
+			}
+
+			if !instValue.FieldByName(idField.Name).IsValid() {
+				panic("ID field does not exist in instance")
+			}
+
+			return instValue.FieldByName(idField.Name).Interface()
 		}, nil
 	}
 
