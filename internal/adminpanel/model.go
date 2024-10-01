@@ -22,6 +22,7 @@ type Model struct {
 	App              *App
 	Fields           []FieldConfig
 	PrimaryKeyGetter func(interface{}) interface{}
+	PrimaryKeyType   reflect.Type
 }
 
 type AdminModelNameInterface interface {
