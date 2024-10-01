@@ -31,7 +31,7 @@ func (m *CustomNameModel) AdminDisplayName() string {
 
 func TestRegisterModel(t *testing.T) {
 	createTestApp := func() *App {
-		panel, err := NewAdminPanel(&MockORMIntegrator{}, &MockWebIntegrator{}, MockPermissionFunc, nil)
+		panel, err := NewMockAdminPanel()
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -152,7 +152,7 @@ func TestRegisterModel(t *testing.T) {
 	})
 
 	t.Run("PermissionError", func(t *testing.T) {
-		panel, err := NewAdminPanel(&MockORMIntegrator{}, &MockWebIntegrator{}, MockPermissionFunc, nil)
+		panel, err := NewMockAdminPanel()
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}

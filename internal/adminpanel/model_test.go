@@ -40,7 +40,7 @@ func TestGetPrimaryKeyGetter(t *testing.T) {
 }
 
 func TestModel_GetViewHandler(t *testing.T) {
-	panel, err := NewAdminPanel(&MockORMIntegrator{}, &MockWebIntegrator{}, MockPermissionFunc, nil)
+	panel, err := NewMockAdminPanel()
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
