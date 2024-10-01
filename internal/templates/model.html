@@ -4,6 +4,7 @@
         <meta charset="UTF-8">
         <title>{{ .model.DisplayName }} administration</title>
         <link rel="stylesheet" href="{{ assetPath "sample.css" }}">
+        <script src="https://unpkg.com/htmx.org@1.9.3"></script>
     </head>
     <body>
         <p><a href="{{ .model.App.Panel.GetFullLink }}">Home</a> > <a href="{{ .model.App.GetFullLink }}">{{ .model.App.DisplayName }}</a> > {{ .model.DisplayName }}</p>
@@ -25,12 +26,17 @@
         <ul>
             {{  range .instances }}
                 <li>
-                    {{- $instance := .Data -}}
-                    {{- range $index, $fieldConfig := $.model.Fields -}}
-                        {{- if $fieldConfig.IncludeInListDisplay -}}
-                            {{ $fieldConfig.DisplayName }}: {{ with $val := getFieldValue $instance $fieldConfig.Name }}{{ $val }}{{ else }}<span>Field not available</span>{{ end }},
+                    <a href="{{ .GetFullLink }}">
+                        {{- $instance := .Data -}}
+                        {{- range $index, $fieldConfig := $.model.Fields -}}
+                            {{- if $fieldConfig.IncludeInListDisplay -}}
+                                {{ $fieldConfig.DisplayName }}: {{ with $val := getFieldValue $instance $fieldConfig.Name }}{{ $val }}{{ else }}<span>Field not available</span>{{ end }},
+                            {{- end -}}
                         {{- end -}}
-                    {{- end -}}
+                    </a>
+                    <ul>
+                        <li>Actions: <a href="{{ .GetFullLink }}">View</a>{{if .Permissions.Update}}  --  <a href="{{ .GetFullEditLink }}">Edit</a>{{ end }}{{if .Permissions.Delete}}  --  <a href="#" hx-delete="{{ .GetFullLink }}" hx-swap="none" hx-on:htmx:after-request="window.location.reload()">Delete</a>{{ end }}</li>
+                    </ul>
                 </li>
             {{ end }}
         </ul>

@@ -70,6 +70,18 @@ func (p PermissionFunc) HasInstanceReadPermission(appName, modelName string, ins
 	return p(permissionRequest, data)
 }
 
+func (p PermissionFunc) HasInstanceUpdatePermission(appName, modelName string, instanceID interface{}, data interface{}) (bool, error) {
+	action := UpdateAction
+	permissionRequest := PermissionRequest{AppName: &appName, ModelName: &modelName, Action: &action, InstanceID: instanceID}
+	return p(permissionRequest, data)
+}
+
+func (p PermissionFunc) HasInstanceDeletePermission(appName, modelName string, instanceID interface{}, data interface{}) (bool, error) {
+	action := DeleteAction
+	permissionRequest := PermissionRequest{AppName: &appName, ModelName: &modelName, Action: &action, InstanceID: instanceID}
+	return p(permissionRequest, data)
+}
+
 func GetModelsWithReadPermissions(app *App, data interface{}) ([]map[string]interface{}, error) {
 	modelsSlice := make([]map[string]interface{}, 0)
 
