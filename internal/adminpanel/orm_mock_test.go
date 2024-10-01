@@ -17,3 +17,7 @@ func (m *MockORMIntegrator) FetchInstancesOnlyFieldWithSearch(interface{}, []str
 func (m *MockORMIntegrator) DeleteInstance(interface{}, interface{}) error {
 	return nil
 }
+
+func (m *MockORMIntegrator) FetchInstanceOnlyFields(interface{}, interface{}, []string) (interface{}, error) {
+	return nil, nil
+}
