@@ -123,10 +123,16 @@ func (m *Model) GetViewHandler() HandlerFunc {
 
 		pagedInstances := filteredInstances[startIndex:endIndex]
 
+		cleanInstances := make([]Instance, len(pagedInstances))
+		for i, instance := range pagedInstances {
+			cleanInstance := Instance{InstanceID: m.PrimaryKeyGetter(instance), Data: instance, Model: m}
+			cleanInstances[i] = cleanInstance
+		}
+
 		html, err := m.App.Panel.Config.Renderer.RenderTemplate("model.html", map[string]interface{}{
 			"apps":        apps,
 			"model":       m,
-			"instances":   pagedInstances,
+			"instances":   cleanInstances,
 			"totalCount":  totalCount,
 			"totalPages":  totalPages,
 			"currentPage": page,
