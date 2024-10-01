@@ -152,6 +152,10 @@ func filterInstancesByPermission(instances interface{}, model *Model, data inter
 		val = val.Elem()
 	}
 
+	if val.Kind() != reflect.Slice && val.Kind() != reflect.Array {
+		return nil, fmt.Errorf("instances must be a slice or array")
+	}
+
 	filtered := make([]interface{}, 0, val.Len())
 
 	for i := 0; i < val.Len(); i++ {
