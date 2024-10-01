@@ -6,6 +6,7 @@ import (
 	"github.com/go-advanced-admin/orm-gorm"
 	"github.com/go-advanced-admin/web-echo"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"gorm.io/gorm"
 	"log"
 )
@@ -32,6 +33,9 @@ type TestModel4 struct {
 
 func main() {
 	e := echo.New()
+	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
+		Format: "method=${method}, uri=${uri}, status=${status} error=${error}\n",
+	}))
 
 	web := adminecho.NewIntegrator(e.Group(""))
 

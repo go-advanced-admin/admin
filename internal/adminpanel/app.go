@@ -59,6 +59,8 @@ func (a *App) RegisterModel(model interface{}) (*Model, error) {
 		fieldDisplayName := utils.HumanizeName(fieldName)
 		includeInList := true
 		includeInFetch := true
+		includeInSearch := true
+		includeInInstanceView := true
 
 		tag := field.Tag.Get("admin")
 		if tag != "" {
@@ -86,6 +88,22 @@ func (a *App) RegisterModel(model interface{}) (*Model, error) {
 					} else {
 						return nil, fmt.Errorf("invalid value for 'listFetch' tag: %s", value)
 					}
+				case "search":
+					if value == "exclude" {
+						includeInSearch = false
+					} else if value == "include" {
+						includeInSearch = true
+					} else {
+						return nil, fmt.Errorf("invalid value for 'search' tag: %s", value)
+					}
+				case "view":
+					if value == "exclude" {
+						includeInInstanceView = false
+					} else if value == "include" {
+						includeInInstanceView = true
+					} else {
+						return nil, fmt.Errorf("invalid value for 'view' tag: %s", value)
+					}
 				case "displayName":
 					fieldDisplayName = value
 				default:
@@ -102,22 +120,43 @@ func (a *App) RegisterModel(model interface{}) (*Model, error) {
 		}
 
 		fields = append(fields, FieldConfig{
-			Name:                 fieldName,
-			DisplayName:          fieldDisplayName,
-			IncludeInListDisplay: includeInList,
-			IncludeInListFetch:   includeInFetch,
+			Name:                  fieldName,
+			DisplayName:           fieldDisplayName,
+			IncludeInListDisplay:  includeInList,
+			IncludeInListFetch:    includeInFetch,
+			IncludeInSearch:       includeInSearch,
+			IncludeInInstanceView: includeInInstanceView,
 		})
 	}
 
+	var primaryKeyType reflect.Type
 	primaryKeyGetter, err := GetPrimaryKeyGetter(model)
 	if err != nil {
 		return nil, fmt.Errorf("error determining primary key for model '%s': %w", name, err)
 	}
 
+	if idField, found := reflect.TypeOf(model).Elem().FieldByName("ID"); found {
+		primaryKeyType = idField.Type
+	} else if _, ok = model.(AdminModelGetIDInterface); ok {
+		tempInstance := reflect.New(reflect.TypeOf(model).Elem()).Interface()
+		idInterface := tempInstance.(AdminModelGetIDInterface).AdminGetID()
+		primaryKeyType = reflect.TypeOf(idInterface)
+	} else {
+		return nil, fmt.Errorf("could not determine primary key type for model '%s'", name)
+	}
+
 	modelInstance := &Model{
-		Name: name, DisplayName: displayName, PTR: model, App: a, Fields: fields, PrimaryKeyGetter: primaryKeyGetter,
+		Name:             name,
+		DisplayName:      displayName,
+		PTR:              model,
+		App:              a,
+		Fields:           fields,
+		PrimaryKeyGetter: primaryKeyGetter,
+		PrimaryKeyType:   primaryKeyType,
 	}
 	a.Panel.Web.HandleRoute("GET", a.Panel.Config.GetPrefix()+modelInstance.GetLink(), modelInstance.GetViewHandler())
+	a.Panel.Web.HandleRoute("GET", a.Panel.Config.GetPrefix()+modelInstance.GetLink()+"/:id", modelInstance.GetInstanceViewHandler())
+	a.Panel.Web.HandleRoute("DELETE", a.Panel.Config.GetPrefix()+modelInstance.GetLink()+"/:id", modelInstance.GetInstanceDeleteHandler())
 	a.ModelsSlice = append(a.ModelsSlice, modelInstance)
 	a.Models[name] = modelInstance
 	return modelInstance, nil

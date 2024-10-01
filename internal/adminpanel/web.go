@@ -6,4 +6,5 @@ type WebIntegrator interface {
 	HandleRoute(method, path string, handler HandlerFunc)
 	ServeAssets(prefix string, renderer TemplateRenderer)
 	GetQueryParam(ctx interface{}, name string) string
+	GetPathParam(ctx interface{}, name string) string
 }
