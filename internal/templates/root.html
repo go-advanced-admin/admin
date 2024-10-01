@@ -1,24 +1,98 @@
 <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>{{ .admin.Config.Name }}</title>
-        <link rel="stylesheet" href="{{ assetPath "sample.css" }}">
-    </head>
-    <body>
-        <h1>{{ .admin.Config.Name }}</h1>
-        <ul>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{{.admin.Config.Name}}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css"/>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<style>
+    html {
+        background-color: oklch(0.232607 0.013807 253.100675) !important;
+    }
+</style>
+
+<body>
+<!-- Add a drawer component here for the sidebar -->
+<div class="drawer lg:drawer-open">
+    <input id="my-drawer" type="checkbox" class="drawer-toggle"/>
+    <div class="drawer-content">
+        <!-- Navbar -->
+        <div class="navbar bg-base-300">
+            <div class="navbar-start">
+                <!-- Button to open the drawer -->
+                <label for="my-drawer" class="btn btn-primary drawer-button lg:hidden">☰</label>
+            </div>
+
+            <div class="navbar-end text-sm whitespace-pre">
+                <h2 class="text-2x1 font-semibold m1-2 whitespace-pre">Welcome, User. </h2>
+                <a class="link" href="https://google.com">View Site</a>
+                <a> / </a>
+                <a class="link" href="https://google.com">Change Password</a>
+                <a> / </a>
+                <a class="link" href="https://google.com">Logout</a>
+            </div>
+        </div>
+        <!-- Path Bar -->
+        <div class="bg-base-100 w-full h-10 flex items-center">
+            <p class="p-2"><a href="{{ .model.App.Panel.GetFullLink }}">Home</a> > <a
+                    href="{{ .model.App.GetFullLink }}">{{
+                .model.App.DisplayName }}</a> > {{ .model.DisplayName }}</p>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="drawer-side">
+        <label for="my-drawer" class="drawer-overlay"></label>
+        <ul class="menu p-4 w-60 h-full bg-base-100 text-base-content">
+            <!-- Sidebar content here -->
+
+            <li>
+                <div>
+                    <h1 class="text-lg font-bold">{{.admin.Config.Name }}</h1>
+                </div>
+            </li>
+
+            <li class="hover:bg-transparent">
+                <div class="divider hover:bg-transparent c:bg-transparent"></div>
+            </li>
+
+
             {{ range .apps }}
-                <li><a href="{{ .app.GetFullLink }}">{{ .app.DisplayName }}</a>
+            <li>
+                <details>
+                    <summary>
+                        <a href="{{ .app.GetFullLink }}">{{ .app.DisplayName }}</a>
+                    </summary>
                     <ul>
                         {{ range .models }}
-                            {{ if .permissions.Read }}
-                                <li><a href="{{ .model.GetFullLink }}">{{ .model.DisplayName }}</a>  -- <a href="{{ .model.GetFullLink }}">View</a>{{ if .permissions.Create }} -- Add{{ end }}</li>
-                            {{ end }}
+                        {{ if .permissions.Read }}
+                        <li>
+                            <details>
+                                <summary>
+                                    <a href="{{ .model.GetFullLink }}">{{ .model.DisplayName }}</a>
+                                </summary>
+                                <ul>
+                                    <li>
+                                        <a href="{{ .model.GetFullLink }}">View</a>
+                                        {{ if .permissions.Create }}<a>Add</a>{{ end }}
+                                    </li>
+                                </ul>
+                            </details>
+                        </li>
+                        {{ end }}
                         {{ end }}
                     </ul>
-                </li>
+                </details>
+            </li>
             {{ end }}
+
+
         </ul>
-    </body>
+    </div>
+</div>
+</body>
 </html>
