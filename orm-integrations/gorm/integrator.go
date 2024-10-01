@@ -52,3 +52,41 @@ func (i *Integrator) FetchInstancesOnlyFields(model interface{}, fields []string
 
 	return instances, nil
 }
+
+func (i *Integrator) FetchInstancesOnlyFieldWithSearch(model interface{}, fields []string, query string, searchFields []string) (interface{}, error) {
+	modelType := reflect.TypeOf(model).Elem()
+	sliceType := reflect.SliceOf(modelType)
+	instances := reflect.New(sliceType).Interface()
+
+	selectFields := make([]string, len(fields))
+	for idx, fieldName := range fields {
+		field, found := modelType.FieldByName(fieldName)
+		if found {
+			selectFields[idx] = getGormColumnName(field)
+		} else {
+			return nil, fmt.Errorf("field %s not found in model", fieldName)
+		}
+	}
+	selectFieldStr := strings.Join(selectFields, ", ")
+
+	var searchConditions []string
+	var searchArgs []interface{}
+	for _, searchField := range searchFields {
+		field, found := modelType.FieldByName(searchField)
+		if found {
+			columnName := getGormColumnName(field)
+			searchConditions = append(searchConditions, fmt.Sprintf("%s LIKE ?", columnName))
+			searchArgs = append(searchArgs, "%"+query+"%")
+		} else {
+			return nil, fmt.Errorf("field %s not found in model", searchField)
+		}
+	}
+	searchConditionStr := strings.Join(searchConditions, " OR ")
+
+	err := i.DB.Select(selectFieldStr).Where(searchConditionStr, searchArgs...).Find(instances, model).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return instances, nil
+}
