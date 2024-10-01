@@ -68,3 +68,11 @@ func TestGetFieldValue(t *testing.T) {
 		})
 	}
 }
+
+func TestGetFieldValue_NilPointer(t *testing.T) {
+	var ptr *TestStruct
+	_, err := GetFieldValue(ptr, "Name")
+	if err == nil {
+		t.Error("expected error for nil pointer, but got nil")
+	}
+}
