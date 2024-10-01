@@ -22,6 +22,24 @@ func TestDefaultTemplateRenderer(t *testing.T) {
 		return renderer
 	}
 
+	t.Run("New Template Renderer", func(t *testing.T) {
+		renderer := NewDefaultTemplateRenderer()
+		if renderer == nil {
+			t.Fatalf("expected non-nil renderer")
+		}
+		if len(renderer.customTemplates) != 0 {
+			t.Fatalf("expected no custom templates")
+		}
+	})
+
+	t.Run("Fail to Add Malformed Custom Template", func(t *testing.T) {
+		renderer := NewDefaultTemplateRenderer()
+		err := renderer.AddCustomTemplate("broken", "{{ .Field")
+		if err == nil {
+			t.Fatalf("expected error on malformed template, got no error")
+		}
+	})
+
 	t.Run("Add and Render Custom Template", func(t *testing.T) {
 		renderer := createTemplateRenderer()
 		err := renderer.AddCustomTemplate("custom", `Custom: {{.Field}}`)
@@ -152,6 +170,24 @@ func TestDefaultTemplateRenderer(t *testing.T) {
 		}
 	})
 
+	t.Run("Register Default Data", func(t *testing.T) {
+		renderer := createTemplateRenderer()
+		defaultData := map[string]interface{}{"key": "value"}
+		err := renderer.RegisterDefaultData(defaultData)
+		if err != nil {
+			t.Fatalf("expected no error registering default data, got %v", err)
+		}
+		val := renderer.defaultData["key"]
+		if val != "value" {
+			t.Errorf("expected 'value' for default data, got %v", val)
+		}
+
+		err = renderer.RegisterDefaultData(map[string]interface{}{"key": "newvalue"})
+		if err == nil {
+			t.Fatalf("expected error registering duplicate default data, got no error")
+		}
+	})
+
 	t.Run("Register and Fetch Default Templates", func(t *testing.T) {
 		renderer := createTemplateRenderer()
 		renderer.RegisterDefaultTemplates(internal.TemplateFiles)
@@ -194,6 +230,17 @@ func TestDefaultTemplateRenderer(t *testing.T) {
 		_, err := renderer.GetAsset("root.html")
 		if err != nil {
 			t.Logf("This might fail if `root.html` doesn't exist, ensure assets are correctly embedded")
+		}
+	})
+
+	t.Run("Render Nonexistent Template", func(t *testing.T) {
+		renderer := createTemplateRenderer()
+		_, err := renderer.RenderTemplate("nonexistent", nil)
+		if err == nil {
+			t.Fatal("expected error, got nil")
+		}
+		if !bytes.Contains([]byte(err.Error()), []byte("not found")) {
+			t.Errorf("expected error message to contain 'not found', got %v", err)
 		}
 	})
 }
