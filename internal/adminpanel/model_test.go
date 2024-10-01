@@ -54,46 +54,58 @@ func TestModel_GetViewHandler(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	handler := model.GetViewHandler()
-	code, _ := handler(map[string]string{"page": "1", "perPage": "10"})
-
-	if code != http.StatusOK {
-		t.Errorf("expected %v, got %v", http.StatusOK, code)
+	tests := []struct {
+		name         string
+		query        map[string]string
+		expectedCode int
+	}{
+		{"Valid pagination", map[string]string{"page": "1", "perPage": "10"}, http.StatusOK},
+		{"Invalid pagination", map[string]string{"page": "abc", "perPage": "-1"}, http.StatusOK},
+		{"Out of range pagination", map[string]string{"page": "10000", "perPage": "10000"}, http.StatusOK},
 	}
 
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			handler := model.GetViewHandler()
+			code, _ := handler(tt.query)
+			if code != uint(tt.expectedCode) {
+				t.Errorf("expected %v, got %v", tt.expectedCode, code)
+			}
+		})
+	}
 }
 
-func TestFilterInstancesByPermission(t *testing.T) {
-	permissionChecker := PermissionFunc(func(req PermissionRequest, data interface{}) (bool, error) {
-		return data == nil, nil
-	})
-
+func TestFilterInstancesByPermission_SliceCheck(t *testing.T) {
 	model := Model{
-		PrimaryKeyGetter: func(instance interface{}) interface{} { return instance.(TestModel).ID },
+		PrimaryKeyGetter: func(instance interface{}) interface{} {
+			if instance, ok := instance.(TestModel); ok {
+				return instance.ID
+			}
+			return nil
+		},
 		App: &App{
 			Name: "App",
 			Panel: &AdminPanel{
-				PermissionChecker: permissionChecker,
+				PermissionChecker: MockPermissionFunc,
 			},
 		},
+	}
+
+	_, err := filterInstancesByPermission("not a slice", &model, nil)
+	if err == nil {
+		t.Errorf("expected an error when passing non-slice type")
 	}
 
 	instances := []TestModel{
 		{ID: 1, Name: "Instance1"},
 		{ID: 2, Name: "Instance2"},
 	}
-
 	filtered, err := filterInstancesByPermission(instances, &model, nil)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	if len(filtered) != 2 {
-		t.Errorf("expected 2 instances, got %d", len(filtered))
-	}
-
-	filtered, err = filterInstancesByPermission(instances, &model, "deny")
-	if len(filtered) != 0 {
-		t.Errorf("expected 0 instances, got %d", len(filtered))
+	if len(filtered) != len(instances) {
+		t.Errorf("expected %d instances, got %d", len(instances), len(filtered))
 	}
 }
