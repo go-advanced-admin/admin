@@ -165,6 +165,22 @@ func TestRegisterModel(t *testing.T) {
 		}
 	})
 
+	t.Run("ExplicitlyExcludeFromFetch", func(t *testing.T) {
+		testApp := createTestApp()
+		type ModelExcludeFetch struct {
+			ID   uint   `gorm:"primarykey"`
+			Name string `admin:"listFetch:exclude"`
+		}
+
+		model, err := testApp.RegisterModel(&ModelExcludeFetch{})
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if model.Fields[1].IncludeInListFetch {
+			t.Error("expected field 'Name' to be excluded from fetch")
+		}
+	})
+
 	t.Run("IncludeInFetchDefaultBehavior", func(t *testing.T) {
 		testApp := createTestApp()
 		type ModelWithID struct {
