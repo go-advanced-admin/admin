@@ -90,3 +90,35 @@ func (i *Integrator) FetchInstancesOnlyFieldWithSearch(model interface{}, fields
 
 	return instances, nil
 }
+
+func (i *Integrator) DeleteInstance(model interface{}, instanceID interface{}) error {
+	modelType := reflect.TypeOf(model).Elem()
+
+	stmt := &gorm.Statement{DB: i.DB}
+	err := stmt.Parse(model)
+	if err != nil {
+		return fmt.Errorf("failed to parse model: %v", err)
+	}
+
+	primaryField := stmt.Schema.PrioritizedPrimaryField
+	if primaryField == nil {
+		return fmt.Errorf("no primary field found for model %s", modelType.Name())
+	}
+
+	primaryKey := primaryField.DBName
+
+	condition := map[string]interface{}{primaryKey: instanceID}
+
+	result := i.DB.Where(condition).Delete(model)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	fmt.Printf("Deleted %d instances of %s\n", result.RowsAffected, modelType.Name())
+
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("no instance found with %s = %v", primaryKey, instanceID)
+	}
+
+	return nil
+}

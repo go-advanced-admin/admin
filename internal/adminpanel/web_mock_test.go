@@ -10,3 +10,9 @@ func (m *MockWebIntegrator) GetQueryParam(ctx interface{}, name string) string {
 	}
 	return ""
 }
+func (m *MockWebIntegrator) GetPathParam(ctx interface{}, name string) string {
+	if path, ok := ctx.(map[string]string); ok {
+		return path[name]
+	}
+	return ""
+}
