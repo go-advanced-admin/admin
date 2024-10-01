@@ -12,6 +12,7 @@ type FieldConfig struct {
 	DisplayName          string
 	IncludeInListFetch   bool
 	IncludeInListDisplay bool
+	IncludeInSearch      bool
 }
 
 type Model struct {
@@ -85,7 +86,19 @@ func (m *Model) GetViewHandler() HandlerFunc {
 			}
 		}
 
-		instances, err := m.App.Panel.ORM.FetchInstancesOnlyFields(m.PTR, fieldsToFetch)
+		searchQuery := m.App.Panel.Web.GetQueryParam(data, "search")
+		var instances interface{}
+		if searchQuery == "" {
+			instances, err = m.App.Panel.ORM.FetchInstancesOnlyFields(m.PTR, fieldsToFetch)
+		} else {
+			var fieldsToSearch []string
+			for _, fieldConfig := range m.Fields {
+				if fieldConfig.IncludeInSearch {
+					fieldsToSearch = append(fieldsToSearch, fieldConfig.Name)
+				}
+			}
+			instances, err = m.App.Panel.ORM.FetchInstancesOnlyFieldWithSearch(m.PTR, fieldsToFetch, searchQuery, fieldsToSearch)
+		}
 		if err != nil {
 			return GetErrorHTML(http.StatusInternalServerError, err)
 		}

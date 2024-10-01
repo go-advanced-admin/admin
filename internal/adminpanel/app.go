@@ -59,6 +59,7 @@ func (a *App) RegisterModel(model interface{}) (*Model, error) {
 		fieldDisplayName := utils.HumanizeName(fieldName)
 		includeInList := true
 		includeInFetch := true
+		includeInSearch := true
 
 		tag := field.Tag.Get("admin")
 		if tag != "" {
@@ -86,6 +87,14 @@ func (a *App) RegisterModel(model interface{}) (*Model, error) {
 					} else {
 						return nil, fmt.Errorf("invalid value for 'listFetch' tag: %s", value)
 					}
+				case "search":
+					if value == "exclude" {
+						includeInSearch = false
+					} else if value == "include" {
+						includeInSearch = true
+					} else {
+						return nil, fmt.Errorf("invalid value for 'search' tag: %s", value)
+					}
 				case "displayName":
 					fieldDisplayName = value
 				default:
@@ -106,6 +115,7 @@ func (a *App) RegisterModel(model interface{}) (*Model, error) {
 			DisplayName:          fieldDisplayName,
 			IncludeInListDisplay: includeInList,
 			IncludeInListFetch:   includeInFetch,
+			IncludeInSearch:      includeInSearch,
 		})
 	}
 
