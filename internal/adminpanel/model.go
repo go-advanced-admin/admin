@@ -8,11 +8,12 @@ import (
 )
 
 type FieldConfig struct {
-	Name                 string
-	DisplayName          string
-	IncludeInListFetch   bool
-	IncludeInListDisplay bool
-	IncludeInSearch      bool
+	Name                  string
+	DisplayName           string
+	IncludeInListFetch    bool
+	IncludeInListDisplay  bool
+	IncludeInSearch       bool
+	IncludeInInstanceView bool
 }
 
 type Model struct {

@@ -122,3 +122,39 @@ func (i *Integrator) DeleteInstance(model interface{}, instanceID interface{}) e
 
 	return nil
 }
+
+func (i *Integrator) FetchInstanceOnlyFields(model interface{}, id interface{}, fields []string) (interface{}, error) {
+	modelType := reflect.TypeOf(model).Elem()
+	instance := reflect.New(modelType).Interface()
+
+	selectFields := make([]string, len(fields))
+	for idx, fieldName := range fields {
+		field, found := modelType.FieldByName(fieldName)
+		if found {
+			selectFields[idx] = getGormColumnName(field)
+		} else {
+			return nil, fmt.Errorf("field %s not found in model", fieldName)
+		}
+	}
+	selectFieldStr := strings.Join(selectFields, ", ")
+
+	stmt := &gorm.Statement{DB: i.DB}
+	err := stmt.Parse(model)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse model: %v", err)
+	}
+
+	primaryField := stmt.Schema.PrioritizedPrimaryField
+	if primaryField == nil {
+		return nil, fmt.Errorf("no primary field found for model %s", modelType.Name())
+	}
+
+	primaryKey := primaryField.DBName
+	err = i.DB.Select(selectFieldStr).Where(fmt.Sprintf("%s = ?", primaryKey), id).First(instance, model).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return instance, nil
+
+}
