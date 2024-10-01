@@ -8,10 +8,12 @@ import (
 )
 
 type FieldConfig struct {
-	Name                 string
-	DisplayName          string
-	IncludeInListFetch   bool
-	IncludeInListDisplay bool
+	Name                  string
+	DisplayName           string
+	IncludeInListFetch    bool
+	IncludeInListDisplay  bool
+	IncludeInSearch       bool
+	IncludeInInstanceView bool
 }
 
 type Model struct {
@@ -21,6 +23,7 @@ type Model struct {
 	App              *App
 	Fields           []FieldConfig
 	PrimaryKeyGetter func(interface{}) interface{}
+	PrimaryKeyType   reflect.Type
 }
 
 type AdminModelNameInterface interface {
@@ -41,6 +44,14 @@ func (m *Model) GetLink() string {
 
 func (m *Model) GetFullLink() string {
 	return m.App.Panel.Config.GetLink(m.GetLink())
+}
+
+func (m *Model) GetAddLink() string {
+	return fmt.Sprintf("%s/add", m.GetLink())
+}
+
+func (m *Model) GetFullAddLink() string {
+	return m.App.Panel.Config.GetLink(m.GetAddLink())
 }
 
 func (m *Model) GetViewHandler() HandlerFunc {
@@ -85,7 +96,19 @@ func (m *Model) GetViewHandler() HandlerFunc {
 			}
 		}
 
-		instances, err := m.App.Panel.ORM.FetchInstancesOnlyFields(m.PTR, fieldsToFetch)
+		searchQuery := m.App.Panel.Web.GetQueryParam(data, "search")
+		var instances interface{}
+		if searchQuery == "" {
+			instances, err = m.App.Panel.ORM.FetchInstancesOnlyFields(m.PTR, fieldsToFetch)
+		} else {
+			var fieldsToSearch []string
+			for _, fieldConfig := range m.Fields {
+				if fieldConfig.IncludeInSearch {
+					fieldsToSearch = append(fieldsToSearch, fieldConfig.Name)
+				}
+			}
+			instances, err = m.App.Panel.ORM.FetchInstancesOnlyFieldWithSearch(m.PTR, fieldsToFetch, searchQuery, fieldsToSearch)
+		}
 		if err != nil {
 			return GetErrorHTML(http.StatusInternalServerError, err)
 		}
@@ -110,10 +133,30 @@ func (m *Model) GetViewHandler() HandlerFunc {
 
 		pagedInstances := filteredInstances[startIndex:endIndex]
 
+		cleanInstances := make([]Instance, len(pagedInstances))
+		for i, instance := range pagedInstances {
+			id := m.PrimaryKeyGetter(instance)
+			updateAllowed, err := m.App.Panel.PermissionChecker.HasInstanceUpdatePermission(m.App.Name, m.Name, id, data)
+			if err != nil {
+				return GetErrorHTML(http.StatusInternalServerError, err)
+			}
+			deleteAllowed, err := m.App.Panel.PermissionChecker.HasInstanceDeletePermission(m.App.Name, m.Name, id, data)
+			if err != nil {
+				return GetErrorHTML(http.StatusInternalServerError, err)
+			}
+			cleanInstance := Instance{
+				InstanceID:  id,
+				Data:        instance,
+				Model:       m,
+				Permissions: Permissions{Read: true, Update: updateAllowed, Delete: deleteAllowed},
+			}
+			cleanInstances[i] = cleanInstance
+		}
+
 		html, err := m.App.Panel.Config.Renderer.RenderTemplate("model.html", map[string]interface{}{
 			"apps":        apps,
 			"model":       m,
-			"instances":   pagedInstances,
+			"instances":   cleanInstances,
 			"totalCount":  totalCount,
 			"totalPages":  totalPages,
 			"currentPage": page,
@@ -128,7 +171,6 @@ func (m *Model) GetViewHandler() HandlerFunc {
 
 func GetPrimaryKeyGetter(model interface{}) (func(interface{}) interface{}, error) {
 	modelType := reflect.TypeOf(model)
-	modelValue := reflect.ValueOf(model)
 
 	if _, implements := model.(AdminModelGetIDInterface); implements {
 		return func(instance interface{}) interface{} {
@@ -138,7 +180,17 @@ func GetPrimaryKeyGetter(model interface{}) (func(interface{}) interface{}, erro
 
 	if idField, found := modelType.Elem().FieldByName("ID"); found {
 		return func(instance interface{}) interface{} {
-			return modelValue.Elem().FieldByName(idField.Name).Interface()
+			instValue := reflect.ValueOf(instance)
+
+			if instValue.Kind() == reflect.Ptr {
+				instValue = instValue.Elem()
+			}
+
+			if !instValue.FieldByName(idField.Name).IsValid() {
+				panic("ID field does not exist in instance")
+			}
+
+			return instValue.FieldByName(idField.Name).Interface()
 		}, nil
 	}
 

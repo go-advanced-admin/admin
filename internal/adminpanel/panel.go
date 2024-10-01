@@ -38,8 +38,8 @@ func NewAdminPanel(orm ORMIntegrator, web WebIntegrator, permissionsCheck Permis
 		Config:            *config,
 	}
 
-	admin.Config.Renderer.RegisterDefaultTemplates(internal.TemplateFiles)
-	admin.Config.Renderer.RegisterDefaultAssets(internal.AssetsFiles)
+	admin.Config.Renderer.RegisterDefaultTemplates(internal.TemplateFiles, "templates/")
+	admin.Config.Renderer.RegisterDefaultAssets(internal.AssetsFiles, "assets/")
 	admin.Config.Renderer.RegisterLinkFunc(admin.Config.GetLink)
 	admin.Config.Renderer.RegisterAssetsFunc(admin.Config.GetAssetLink)
 

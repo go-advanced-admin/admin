@@ -13,7 +13,7 @@
                 <ul>
                     {{ range .models }}
                         {{ if .permissions.Read }}
-                            <li><a href="{{ .model.GetFullLink }}">{{ .model.DisplayName }}</a>  -- <a href="{{ .model.GetFullLink }}">View</a>{{ if .permissions.Create }} -- Add{{ end }}</li>
+                            <li><a href="{{ .model.GetFullLink }}">{{ .model.DisplayName }}</a>  -- <a href="{{ .model.GetFullLink }}">View</a>{{ if .permissions.Create }}  -- <a href="{{ .model.GetFullAddLink }}">Add</a>{{ end }}</li>
                         {{ end }}
                     {{ end }}
                 </ul>

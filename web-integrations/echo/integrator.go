@@ -44,3 +44,8 @@ func (i *Integrator) GetQueryParam(ctx interface{}, name string) string {
 	ec := ctx.(echo.Context)
 	return ec.QueryParam(name)
 }
+
+func (i *Integrator) GetPathParam(ctx interface{}, name string) string {
+	ec := ctx.(echo.Context)
+	return ec.Param(name)
+}

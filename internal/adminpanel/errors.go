@@ -1,6 +1,8 @@
 package adminpanel
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func GetErrorHTML(code uint, err error) (uint, string) {
 	if err == nil {
