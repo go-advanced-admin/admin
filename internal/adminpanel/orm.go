@@ -12,5 +12,5 @@ func (m *MockORMIntegrator) FetchInstances(model interface{}) (interface{}, erro
 }
 
 func (m *MockORMIntegrator) FetchInstancesOnlyFields(model interface{}, fields []string) (interface{}, error) {
-	return nil, nil
+	return []interface{}{}, nil
 }
