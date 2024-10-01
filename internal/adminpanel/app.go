@@ -120,7 +120,7 @@ func (a *App) RegisterModel(model interface{}) (*Model, error) {
 	a.Panel.Web.HandleRoute("GET", a.Panel.Config.GetPrefix()+modelInstance.GetLink(), modelInstance.GetViewHandler())
 	a.ModelsSlice = append(a.ModelsSlice, modelInstance)
 	a.Models[name] = modelInstance
-	return a.Models[name], nil
+	return modelInstance, nil
 }
 
 func (a *App) GetHandler() HandlerFunc {
