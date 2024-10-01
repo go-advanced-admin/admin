@@ -6,13 +6,16 @@ import (
 	"fmt"
 	"github.com/go-advanced-admin/admin/internal/utils"
 	"html/template"
+	"log"
 )
 
 type TemplateRenderer interface {
 	RenderTemplate(name string, data map[string]interface{}) (string, error)
 	RegisterDefaultTemplates(templates embed.FS)
-	RegisterDefaultData(data map[string]interface{})
+	RegisterCompositeDefaultTemplate(name string, baseNames ...string) error
+	RegisterDefaultData(data map[string]interface{}) error
 	AddCustomTemplate(name string, tmplText string) error
+	AddCustomCompositeTemplate(name string, baseNames ...string) error
 	RegisterDefaultAssets(assets embed.FS)
 	AddCustomAsset(name string, asset []byte)
 	GetAsset(name string) ([]byte, error)
@@ -21,24 +24,30 @@ type TemplateRenderer interface {
 }
 
 type DefaultTemplateRenderer struct {
-	templates        map[string]*template.Template
-	defaultTemplates embed.FS
-	defaultData      map[string]interface{}
-	assets           map[string]*[]byte
-	defaultAssets    embed.FS
-	linkFunc         func(string) string
-	assetsFunc       func(string) string
+	customTemplates           map[string]string
+	customCompositeTemplates  map[string][]string
+	defaultCompositeTemplates map[string][]string
+	defaultTemplates          embed.FS
+	defaultData               map[string]interface{}
+	assets                    map[string]*[]byte
+	defaultAssets             embed.FS
+	linkFunc                  func(string) string
+	assetsFunc                func(string) string
 }
 
 func NewDefaultTemplateRenderer() *DefaultTemplateRenderer {
 	return &DefaultTemplateRenderer{
-		templates:   make(map[string]*template.Template),
-		defaultData: make(map[string]interface{}),
-		assets:      make(map[string]*[]byte),
+		customTemplates:           make(map[string]string),
+		customCompositeTemplates:  make(map[string][]string),
+		defaultCompositeTemplates: make(map[string][]string),
+		defaultData:               make(map[string]interface{}),
+		assets:                    make(map[string]*[]byte),
 	}
 }
 
 func (tr *DefaultTemplateRenderer) RenderTemplate(name string, data map[string]interface{}) (string, error) {
+	log.Printf("Rendering template %s", name)
+
 	newDataMap := make(map[string]interface{})
 	for key, value := range tr.defaultData {
 		newDataMap[key] = value
@@ -46,42 +55,214 @@ func (tr *DefaultTemplateRenderer) RenderTemplate(name string, data map[string]i
 	for key, value := range data {
 		newDataMap[key] = value
 	}
-	tmpl, exists := tr.templates[name]
-	if !exists {
-		tmplBytes, err := tr.defaultTemplates.ReadFile(fmt.Sprintf("templates/%s", name))
-		if err != nil {
-			return "", err
-		}
-		tmpl, err = template.New(name).Funcs(tr.templateFuncs()).Parse(string(tmplBytes))
-		if err != nil {
-			return "", err
-		}
+
+	entryName, tmpl, err := tr.gatherTemplates(name, "", nil)
+	if err != nil {
+		log.Printf("Failed to combine templates for %s: %v", name, err)
+		return "", fmt.Errorf("template %s could not be combined: %v", name, err)
+	}
+
+	if entryName == "" {
+		return "", fmt.Errorf("template %s could not be combined", name)
+	}
+
+	if tmpl == nil {
+		log.Printf("Template %s not found after combining", name)
+		return "", fmt.Errorf("template %s not found", name)
 	}
 
 	var buf bytes.Buffer
-	err := tmpl.Execute(&buf, newDataMap)
-	if err != nil {
-		return "", err
+	log.Printf("Executing template %s", name)
+	if err = tmpl.ExecuteTemplate(&buf, entryName, newDataMap); err != nil {
+		log.Printf("Error executing template %s: %v", name, err)
+		return "", fmt.Errorf("error executing template %s: %v", name, err)
 	}
 	return buf.String(), nil
 }
 
+func (tr *DefaultTemplateRenderer) gatherTemplates(name string, entryName string, tmpl *template.Template) (string, *template.Template, error) {
+	log.Printf("Gathering templates for %s", name)
+
+	var err error
+
+	if content, exists := tr.customTemplates[name]; exists {
+		log.Printf("Found custom template for %s", name)
+		if entryName == "" {
+			entryName = name
+		}
+		if tmpl == nil {
+			tmpl, err = template.New(name).Funcs(tr.templateFuncs()).Parse(content)
+			return entryName, tmpl, err
+		} else {
+			tmpl, err = tmpl.New(name).Funcs(tr.templateFuncs()).Parse(content)
+			return entryName, tmpl, err
+		}
+	}
+
+	if subBases, exists := tr.customCompositeTemplates[name]; exists {
+		log.Printf("Found custom composite template for %s", name)
+		for _, subBase := range subBases {
+			if entryName == "" {
+				entryName = subBase
+			}
+			if tmpl == nil {
+				tmpl = template.New(name).Funcs(tr.templateFuncs())
+			}
+			entryName, tmpl, err = tr.gatherTemplates(subBase, entryName, tmpl)
+			if err != nil {
+				return entryName, nil, err
+			}
+		}
+		if tmpl != nil {
+			return entryName, tmpl, nil
+		}
+	}
+
+	if subBases, exists := tr.defaultCompositeTemplates[name]; exists {
+		log.Printf("Found default composite template for %s", name)
+		for _, subBase := range subBases {
+			if entryName == "" {
+				entryName = subBase
+			}
+			if tmpl == nil {
+				tmpl = template.New(name).Funcs(tr.templateFuncs())
+			}
+			entryName, tmpl, err = tr.gatherTemplates(subBase, entryName, tmpl)
+			if err != nil {
+				return entryName, nil, err
+			}
+		}
+		if tmpl != nil {
+			return entryName, tmpl, nil
+		}
+	}
+
+	if tmplBytes, err := tr.defaultTemplates.ReadFile(fmt.Sprintf("templates/%s", name)); err == nil {
+		log.Printf("Found embedded template for %s", name)
+		if entryName == "" {
+			entryName = name
+		}
+		if tmpl == nil {
+			tmpl, err = template.New(name).Funcs(tr.templateFuncs()).Parse(string(tmplBytes))
+			return entryName, tmpl, err
+		} else {
+			tmpl, err = tmpl.New(name).Funcs(tr.templateFuncs()).Parse(string(tmplBytes))
+			return entryName, tmpl, err
+		}
+
+	}
+
+	return entryName, nil, fmt.Errorf("template %s not found", name)
+}
+
 func (tr *DefaultTemplateRenderer) RegisterDefaultTemplates(templates embed.FS) {
+	log.Print("Registering default templates")
 	tr.defaultTemplates = templates
 }
 
-func (tr *DefaultTemplateRenderer) RegisterDefaultData(data map[string]interface{}) {
-	for key, value := range data {
-		tr.defaultData[key] = value
+func (tr *DefaultTemplateRenderer) validateAndParseBases(tmpl *template.Template, baseNames []string) error {
+	log.Printf("Validating and parsing base templates: %v", baseNames)
+
+	if len(baseNames) == 0 {
+		return fmt.Errorf("no base templates provided")
 	}
+	for _, baseName := range baseNames {
+		if content, exists := tr.customTemplates[baseName]; exists {
+			_, err := tmpl.New(baseName).Parse(content)
+			if err != nil {
+				log.Printf("Error parsing base template %s: %v", baseName, err)
+				return fmt.Errorf("error parsing base template %s: %v", baseName, err)
+			}
+		} else if subBases, exists := tr.customCompositeTemplates[baseName]; exists {
+			if err := tr.validateAndParseBases(tmpl, subBases); err != nil {
+				return err
+			}
+		} else if subBases, exists = tr.defaultCompositeTemplates[baseName]; exists {
+			if err := tr.validateAndParseBases(tmpl, subBases); err != nil {
+				return err
+			}
+		} else if tmplBytes, err := tr.defaultTemplates.ReadFile(fmt.Sprintf("templates/%s", baseName)); err == nil {
+			_, err = tmpl.New(baseName).Parse(string(tmplBytes))
+			if err != nil {
+				log.Printf("Error parsing embedded template %s: %v", baseName, err)
+				return fmt.Errorf("error parsing embedded template %s: %v", baseName, err)
+			}
+		} else {
+			log.Printf("Base template %s not found", baseName)
+			return fmt.Errorf("base template %s not found", baseName)
+		}
+	}
+	return nil
 }
 
-func (tr *DefaultTemplateRenderer) AddCustomTemplate(name string, tmplText string) error {
-	tmpl, err := template.New(name).Funcs(tr.templateFuncs()).Parse(tmplText)
+func (tr *DefaultTemplateRenderer) RegisterCompositeDefaultTemplate(name string, baseNames ...string) error {
+	if _, exists := tr.defaultCompositeTemplates[name]; exists {
+		return fmt.Errorf("template %s already exists as a default composite template", name)
+	}
+
+	if len(baseNames) <= 1 {
+		return fmt.Errorf("template %s has no base templates", name)
+	}
+
+	compositeTemplate := template.New(name).Funcs(tr.templateFuncs())
+
+	err := tr.validateAndParseBases(compositeTemplate, baseNames)
 	if err != nil {
 		return err
 	}
-	tr.templates[name] = tmpl
+
+	tr.defaultCompositeTemplates[name] = baseNames
+	return nil
+}
+
+func (tr *DefaultTemplateRenderer) AddCustomCompositeTemplate(name string, baseNames ...string) error {
+	if _, exists := tr.customCompositeTemplates[name]; exists {
+		return fmt.Errorf("template %s already exists as a custom composite template", name)
+	}
+	if _, exists := tr.customTemplates[name]; exists {
+		return fmt.Errorf("template %s already exists as a custom template", name)
+	}
+
+	if len(baseNames) <= 1 {
+		return fmt.Errorf("template %s has no base templates", name)
+	}
+
+	compositeTemplate := template.New(name).Funcs(tr.templateFuncs())
+
+	err := tr.validateAndParseBases(compositeTemplate, baseNames)
+	if err != nil {
+		return err
+	}
+
+	tr.customCompositeTemplates[name] = baseNames
+	return nil
+}
+
+func (tr *DefaultTemplateRenderer) RegisterDefaultData(data map[string]interface{}) error {
+	for key, value := range data {
+		if _, exists := tr.defaultData[key]; exists {
+			return fmt.Errorf("data key %s already exists", key)
+		}
+		tr.defaultData[key] = value
+	}
+
+	return nil
+}
+
+func (tr *DefaultTemplateRenderer) AddCustomTemplate(name, tmplText string) error {
+	if _, exists := tr.customTemplates[name]; exists {
+		return fmt.Errorf("template %s already exists as a custom template", name)
+	}
+
+	if _, exists := tr.customCompositeTemplates[name]; exists {
+		return fmt.Errorf("template %s already exists as a custom composite template", name)
+	}
+
+	if _, err := template.New(name).Funcs(tr.templateFuncs()).Parse(tmplText); err != nil {
+		return fmt.Errorf("error parsing template %s: %v", name, err)
+	}
+
+	tr.customTemplates[name] = tmplText
 	return nil
 }
 
