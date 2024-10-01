@@ -293,9 +293,7 @@ func TestRegisterModel(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		panel.PermissionChecker = func(req PermissionRequest, ctx interface{}) (bool, error) {
-			return true, nil
-		}
+		panel.PermissionChecker = MockPermissionFunc
 		handlerFunc := testApp.GetHandler()
 		status, html := handlerFunc(nil)
 		if status != http.StatusOK {
