@@ -35,7 +35,7 @@
                         {{- end -}}
                     </a>
                     <ul>
-                        <li>Actions: <a href="{{ .GetFullLink }}">View</a>{{if .Permissions.Update}}  --  <a href="{{ .GetFullEditLink }}">Edit</a>{{ end }}{{if .Permissions.Delete}}  --  <a href="#" hx-delete="{{ .GetFullLink }}" hx-swap="none" hx-on:htmx:after-request="window.location.reload()">Delete</a>{{ end }}</li>
+                        <li>Actions: <a href="{{ .GetFullLink }}">View</a>{{if .Permissions.Update}}  --  <a href="{{ .GetFullEditLink }}">Edit</a>{{ end }}{{if .Permissions.Delete}}  --  <a href="#" hx-delete="{{ .GetFullLink }}" hx-swap="none" hx-on:htmx:after-request="window.location.reload()" hx-confirm="Are you sure you want to delete this item?">Delete</a>{{ end }}</li>
                     </ul>
                 </li>
             {{ end }}
