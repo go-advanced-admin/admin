@@ -29,6 +29,14 @@ func (m *CustomNameModel) AdminDisplayName() string {
 	return "Custom Display Name"
 }
 
+type unsafeModelName struct {
+	ID uint
+}
+
+func (m *unsafeModelName) AdminName() string {
+	return "unsafe Model Name"
+}
+
 func TestRegisterModel(t *testing.T) {
 	createTestApp := func() *App {
 		panel, err := NewMockAdminPanel()
@@ -120,23 +128,27 @@ func TestRegisterModel(t *testing.T) {
 
 	t.Run("URLSafetyCheck", func(t *testing.T) {
 		testApp := createTestApp()
-		model := &struct {
+
+		_, err := testApp.RegisterModel(&unsafeModelName{})
+		if err == nil {
+			t.Error("expected an error due to invalid URL safety of the model's name")
+		}
+	})
+
+	t.Run("ValidModelWithNameCheck", func(t *testing.T) {
+		testApp := createTestApp()
+
+		type safeNameModel struct {
 			ID uint
-		}{}
-		originModel, err := testApp.RegisterModel(model)
+		}
+
+		model, err := testApp.RegisterModel(&safeNameModel{})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
-		if originModel == nil {
-			t.Fatal("expected model to be registered")
-		}
-		invalidNameModel := &struct {
-			ID   uint
-			Name string
-		}{Name: "Invalid Name!"}
-		_, err = testApp.RegisterModel(invalidNameModel)
-		if err == nil {
-			t.Error("expected an error due to invalid URL safety of name")
+
+		if model.Name != "safeNameModel" {
+			t.Errorf("Expected model name to be safe, got: %s", model.Name)
 		}
 	})
 
