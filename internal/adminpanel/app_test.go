@@ -11,6 +11,11 @@ type TestModel1 struct {
 	Name string `admin:"displayName:Custom Name;listFetch:include"`
 }
 
+type TestModel2 struct {
+	ID     uint   `gorm:"primarykey"`
+	Status string `admin:"listDisplay:exclude;unknownTag:test"`
+}
+
 type NonPointerModel struct {
 	Name string
 }
@@ -123,6 +128,39 @@ func TestRegisterModel(t *testing.T) {
 		}
 		if !model.Fields[1].IncludeInListFetch {
 			t.Error("expected field 'Name' to be included in fetch")
+		}
+	})
+
+	t.Run("UnknownTagKey", func(t *testing.T) {
+		testApp := createTestApp()
+		_, err := testApp.RegisterModel(&TestModel2{})
+		if err == nil {
+			t.Error("expected an error due to unknown tag key")
+		}
+	})
+
+	t.Run("IncludeInFetchDefaultBehavior", func(t *testing.T) {
+		testApp := createTestApp()
+		type ModelWithID struct {
+			ID     uint
+			Status string `admin:"listDisplay:exclude"`
+		}
+
+		type ModelWithoutID struct {
+			Status string `admin:"listDisplay:exclude"`
+		}
+
+		modelWithID, err := testApp.RegisterModel(&ModelWithID{})
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if !modelWithID.Fields[0].IncludeInListFetch {
+			t.Error("expected ID field to be included in fetch by default")
+		}
+
+		_, err = testApp.RegisterModel(&ModelWithoutID{})
+		if err == nil {
+			t.Fatalf("expected an error but instead got no error")
 		}
 	})
 
