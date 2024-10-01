@@ -10,6 +10,40 @@ type TestModel struct {
 	Name string
 }
 
+type TestModelWithID struct {
+	IDValue uint
+	Name    string
+}
+
+func (m *TestModelWithID) AdminGetID() interface{} {
+	return m.IDValue
+}
+
+func TestPrimaryKeyGetter_InterfaceImplemented(t *testing.T) {
+	model := &TestModelWithID{IDValue: 42}
+	getter, err := GetPrimaryKeyGetter(model)
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	id := getter(model)
+	if id != uint(42) {
+		t.Errorf("expected ID 42, got %v", id)
+	}
+}
+
+func TestGetPrimaryKeyGetter_IDField(t *testing.T) {
+	model := &TestModel{}
+	getter, err := GetPrimaryKeyGetter(model)
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+
+	id := getter(model)
+	if id != uint(0) {
+		t.Errorf("expected 0, got %v", id)
+	}
+}
+
 func TestModel_GetLink(t *testing.T) {
 	app := &App{Name: "App", Panel: &AdminPanel{Config: AdminConfig{Prefix: "admin"}}}
 	model := Model{Name: "TestModel", App: app}
@@ -44,6 +78,7 @@ func TestModel_GetViewHandler(t *testing.T) {
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
+
 	testApp, err := panel.RegisterApp("TestApp", "Test App")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -60,7 +95,7 @@ func TestModel_GetViewHandler(t *testing.T) {
 		expectedCode int
 	}{
 		{"Valid pagination", map[string]string{"page": "1", "perPage": "10"}, http.StatusOK},
-		{"Invalid pagination", map[string]string{"page": "abc", "perPage": "-1"}, http.StatusOK},
+		{"Invalid pagination strings", map[string]string{"page": "abc", "perPage": "-1"}, http.StatusOK},
 		{"Out of range pagination", map[string]string{"page": "10000", "perPage": "10000"}, http.StatusOK},
 	}
 
