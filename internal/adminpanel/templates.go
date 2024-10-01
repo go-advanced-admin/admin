@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/go-advanced-admin/admin/internal/utils"
 	"html/template"
-	"log"
 )
 
 type TemplateRenderer interface {
@@ -46,8 +45,6 @@ func NewDefaultTemplateRenderer() *DefaultTemplateRenderer {
 }
 
 func (tr *DefaultTemplateRenderer) RenderTemplate(name string, data map[string]interface{}) (string, error) {
-	log.Printf("Rendering template %s", name)
-
 	newDataMap := make(map[string]interface{})
 	for key, value := range tr.defaultData {
 		newDataMap[key] = value
@@ -58,7 +55,6 @@ func (tr *DefaultTemplateRenderer) RenderTemplate(name string, data map[string]i
 
 	entryName, tmpl, err := tr.gatherTemplates(name, "", nil)
 	if err != nil {
-		log.Printf("Failed to combine templates for %s: %v", name, err)
 		return "", fmt.Errorf("template %s could not be combined: %v", name, err)
 	}
 
@@ -67,26 +63,20 @@ func (tr *DefaultTemplateRenderer) RenderTemplate(name string, data map[string]i
 	}
 
 	if tmpl == nil {
-		log.Printf("Template %s not found after combining", name)
 		return "", fmt.Errorf("template %s not found", name)
 	}
 
 	var buf bytes.Buffer
-	log.Printf("Executing template %s", name)
 	if err = tmpl.ExecuteTemplate(&buf, entryName, newDataMap); err != nil {
-		log.Printf("Error executing template %s: %v", name, err)
 		return "", fmt.Errorf("error executing template %s: %v", name, err)
 	}
 	return buf.String(), nil
 }
 
 func (tr *DefaultTemplateRenderer) gatherTemplates(name string, entryName string, tmpl *template.Template) (string, *template.Template, error) {
-	log.Printf("Gathering templates for %s", name)
-
 	var err error
 
 	if content, exists := tr.customTemplates[name]; exists {
-		log.Printf("Found custom template for %s", name)
 		if entryName == "" {
 			entryName = name
 		}
@@ -100,7 +90,6 @@ func (tr *DefaultTemplateRenderer) gatherTemplates(name string, entryName string
 	}
 
 	if subBases, exists := tr.customCompositeTemplates[name]; exists {
-		log.Printf("Found custom composite template for %s", name)
 		for _, subBase := range subBases {
 			if entryName == "" {
 				entryName = subBase
@@ -119,7 +108,6 @@ func (tr *DefaultTemplateRenderer) gatherTemplates(name string, entryName string
 	}
 
 	if subBases, exists := tr.defaultCompositeTemplates[name]; exists {
-		log.Printf("Found default composite template for %s", name)
 		for _, subBase := range subBases {
 			if entryName == "" {
 				entryName = subBase
@@ -138,7 +126,6 @@ func (tr *DefaultTemplateRenderer) gatherTemplates(name string, entryName string
 	}
 
 	if tmplBytes, err := tr.defaultTemplates.ReadFile(fmt.Sprintf("templates/%s", name)); err == nil {
-		log.Printf("Found embedded template for %s", name)
 		if entryName == "" {
 			entryName = name
 		}
@@ -156,13 +143,10 @@ func (tr *DefaultTemplateRenderer) gatherTemplates(name string, entryName string
 }
 
 func (tr *DefaultTemplateRenderer) RegisterDefaultTemplates(templates embed.FS) {
-	log.Print("Registering default templates")
 	tr.defaultTemplates = templates
 }
 
 func (tr *DefaultTemplateRenderer) validateAndParseBases(tmpl *template.Template, baseNames []string) error {
-	log.Printf("Validating and parsing base templates: %v", baseNames)
-
 	if len(baseNames) == 0 {
 		return fmt.Errorf("no base templates provided")
 	}
@@ -170,7 +154,6 @@ func (tr *DefaultTemplateRenderer) validateAndParseBases(tmpl *template.Template
 		if content, exists := tr.customTemplates[baseName]; exists {
 			_, err := tmpl.New(baseName).Parse(content)
 			if err != nil {
-				log.Printf("Error parsing base template %s: %v", baseName, err)
 				return fmt.Errorf("error parsing base template %s: %v", baseName, err)
 			}
 		} else if subBases, exists := tr.customCompositeTemplates[baseName]; exists {
@@ -184,11 +167,9 @@ func (tr *DefaultTemplateRenderer) validateAndParseBases(tmpl *template.Template
 		} else if tmplBytes, err := tr.defaultTemplates.ReadFile(fmt.Sprintf("templates/%s", baseName)); err == nil {
 			_, err = tmpl.New(baseName).Parse(string(tmplBytes))
 			if err != nil {
-				log.Printf("Error parsing embedded template %s: %v", baseName, err)
 				return fmt.Errorf("error parsing embedded template %s: %v", baseName, err)
 			}
 		} else {
-			log.Printf("Base template %s not found", baseName)
 			return fmt.Errorf("base template %s not found", baseName)
 		}
 	}
