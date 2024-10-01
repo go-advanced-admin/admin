@@ -139,6 +139,32 @@ func TestRegisterModel(t *testing.T) {
 		}
 	})
 
+	t.Run("InvalidTagValueForListDisplay", func(t *testing.T) {
+		testApp := createTestApp()
+		type InvalidTagValueModel struct {
+			ID   uint   `gorm:"primarykey"`
+			Name string `admin:"listDisplay:invalid"`
+		}
+
+		_, err := testApp.RegisterModel(&InvalidTagValueModel{})
+		if err == nil {
+			t.Error("expected an error due to invalid listDisplay tag value")
+		}
+	})
+
+	t.Run("InvalidTagValueForListFetch", func(t *testing.T) {
+		testApp := createTestApp()
+		type InvalidTagFetchModel struct {
+			ID   uint   `gorm:"primarykey"`
+			Name string `admin:"listFetch:invalid"`
+		}
+
+		_, err := testApp.RegisterModel(&InvalidTagFetchModel{})
+		if err == nil {
+			t.Error("expected an error due to invalid listFetch tag value")
+		}
+	})
+
 	t.Run("IncludeInFetchDefaultBehavior", func(t *testing.T) {
 		testApp := createTestApp()
 		type ModelWithID struct {
@@ -239,6 +265,28 @@ func TestRegisterModel(t *testing.T) {
 		status, _ := handlerFunc(nil)
 		if status != http.StatusForbidden {
 			t.Fatalf("expected status 403 for forbidden access, got '%v'", status)
+		}
+	})
+
+	t.Run("SuccessfulRender", func(t *testing.T) {
+		panel, err := NewMockAdminPanel()
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		testApp, err := panel.RegisterApp("TestApp", "Test App")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		panel.PermissionChecker = func(req PermissionRequest, ctx interface{}) (bool, error) {
+			return true, nil
+		}
+		handlerFunc := testApp.GetHandler()
+		status, html := handlerFunc(nil)
+		if status != http.StatusOK {
+			t.Fatalf("expected status 200, got '%v'", status)
+		}
+		if html == "" {
+			t.Fatal("expected non-empty html content for successful render")
 		}
 	})
 }
