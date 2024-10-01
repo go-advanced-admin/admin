@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func PanelMockPermissionFunc(req PermissionRequest, ctx interface{}) (bool, error) {
+func PanelMockPermissionFunc(req PermissionRequest, _ interface{}) (bool, error) {
 	if req.Action != nil && *req.Action == ReadAction {
 		return true, nil
 	}
