@@ -123,9 +123,12 @@ func TestRegisterModel(t *testing.T) {
 		model := &struct {
 			ID uint
 		}{}
-		_, err := testApp.RegisterModel(model)
+		originModel, err := testApp.RegisterModel(model)
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
+		}
+		if originModel == nil {
+			t.Fatal("expected model to be registered")
 		}
 		invalidNameModel := &struct {
 			ID   uint
@@ -167,6 +170,25 @@ func TestRegisterModel(t *testing.T) {
 		status, _ := handlerFunc(nil)
 		if status != http.StatusInternalServerError {
 			t.Fatalf("expected status 500 for mock error, got '%v'", status)
+		}
+	})
+
+	t.Run("ForbiddenAccess", func(t *testing.T) {
+		panel, err := NewMockAdminPanel()
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		testApp, err := panel.RegisterApp("TestApp", "Test App")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		panel.PermissionChecker = func(req PermissionRequest, ctx interface{}) (bool, error) {
+			return false, nil
+		}
+		handlerFunc := testApp.GetHandler()
+		status, _ := handlerFunc(nil)
+		if status != http.StatusForbidden {
+			t.Fatalf("expected status 403 for forbidden access, got '%v'", status)
 		}
 	})
 }
