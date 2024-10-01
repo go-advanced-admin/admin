@@ -2,10 +2,10 @@ package adminpanel
 
 type MockORMIntegrator struct{}
 
-func (m *MockORMIntegrator) FetchInstances(model interface{}) (interface{}, error) {
+func (m *MockORMIntegrator) FetchInstances(interface{}) (interface{}, error) {
 	return nil, nil
 }
 
-func (m *MockORMIntegrator) FetchInstancesOnlyFields(model interface{}, fields []string) (interface{}, error) {
+func (m *MockORMIntegrator) FetchInstancesOnlyFields(interface{}, []string) (interface{}, error) {
 	return []interface{}{}, nil
 }
