@@ -25,10 +25,6 @@ type Permissions struct {
 
 type PermissionFunc func(PermissionRequest, interface{}) (bool, error)
 
-func MockPermissionFunc(_ PermissionRequest, _ interface{}) (bool, error) {
-	return true, nil
-}
-
 func (p PermissionFunc) HasPermission(r PermissionRequest, data interface{}) (bool, error) {
 	return p(r, data)
 }
