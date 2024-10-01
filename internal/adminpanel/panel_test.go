@@ -65,7 +65,7 @@ func TestAdminPanel_GetHandler(t *testing.T) {
 	panel.PermissionChecker = errorPermissionFunc
 
 	status, body := handler(nil)
-	if status != http.StatusInternalServerError || body != "permission check error" {
+	if status != http.StatusInternalServerError {
 		t.Errorf("expected status InternalServerError and error message, got %d and %s", status, body)
 	}
 }

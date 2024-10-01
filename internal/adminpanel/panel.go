@@ -53,20 +53,20 @@ func (ap *AdminPanel) GetHandler() HandlerFunc {
 	return func(data interface{}) (uint, string) {
 		allowed, err := ap.PermissionChecker.HasReadPermission(data)
 		if err != nil {
-			return http.StatusInternalServerError, err.Error()
+			return GetErrorHTML(http.StatusInternalServerError, err)
 		}
 		if !allowed {
-			return http.StatusForbidden, "Forbidden"
+			return GetErrorHTML(http.StatusForbidden, fmt.Errorf("forbidden"))
 		}
 
 		apps, err := GetAppsWithReadPermissions(ap, data)
 		if err != nil {
-			return http.StatusInternalServerError, err.Error()
+			return GetErrorHTML(http.StatusInternalServerError, err)
 		}
 
 		html, err := ap.Config.Renderer.RenderTemplate("root.html", map[string]interface{}{"admin": ap, "apps": apps})
 		if err != nil {
-			return http.StatusInternalServerError, err.Error()
+			return GetErrorHTML(http.StatusInternalServerError, err)
 		}
 		return http.StatusOK, html
 	}
