@@ -67,15 +67,15 @@ func (m *Model) GetViewHandler() HandlerFunc {
 
 		allowed, err := m.App.Panel.PermissionChecker.HasModelReadPermission(m.App.Name, m.Name, data)
 		if err != nil {
-			return http.StatusInternalServerError, err.Error()
+			return GetErrorHTML(http.StatusInternalServerError, err)
 		}
 		if !allowed {
-			return http.StatusForbidden, "Forbidden"
+			return GetErrorHTML(http.StatusForbidden, fmt.Errorf("forbidden"))
 		}
 
 		apps, err := GetAppsWithReadPermissions(m.App.Panel, data)
 		if err != nil {
-			return http.StatusInternalServerError, err.Error()
+			return GetErrorHTML(http.StatusInternalServerError, err)
 		}
 
 		var fieldsToFetch []string
@@ -87,12 +87,12 @@ func (m *Model) GetViewHandler() HandlerFunc {
 
 		instances, err := m.App.Panel.ORM.FetchInstancesOnlyFields(m.PTR, fieldsToFetch)
 		if err != nil {
-			return http.StatusInternalServerError, err.Error()
+			return GetErrorHTML(http.StatusInternalServerError, err)
 		}
 
 		filteredInstances, err := filterInstancesByPermission(instances, m, data)
 		if err != nil {
-			return http.StatusInternalServerError, err.Error()
+			return GetErrorHTML(http.StatusInternalServerError, err)
 		}
 
 		totalCount := uint(len(filteredInstances))
@@ -120,7 +120,7 @@ func (m *Model) GetViewHandler() HandlerFunc {
 			"perPage":     perPage,
 		})
 		if err != nil {
-			return http.StatusInternalServerError, err.Error()
+			return GetErrorHTML(http.StatusInternalServerError, err)
 		}
 		return http.StatusOK, html
 	}

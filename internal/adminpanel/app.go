@@ -127,20 +127,20 @@ func (a *App) GetHandler() HandlerFunc {
 	return func(data interface{}) (uint, string) {
 		allowed, err := a.Panel.PermissionChecker.HasAppReadPermission(a.Name, data)
 		if err != nil {
-			return http.StatusInternalServerError, err.Error()
+			return GetErrorHTML(http.StatusInternalServerError, err)
 		}
 		if !allowed {
-			return http.StatusForbidden, "Forbidden"
+			return GetErrorHTML(http.StatusForbidden, fmt.Errorf("forbidden"))
 		}
 
 		models, err := GetModelsWithReadPermissions(a, data)
 		if err != nil {
-			return http.StatusInternalServerError, err.Error()
+			return GetErrorHTML(http.StatusInternalServerError, err)
 		}
 
 		html, err := a.Panel.Config.Renderer.RenderTemplate("app.html", map[string]interface{}{"app": a, "models": models})
 		if err != nil {
-			return http.StatusInternalServerError, err.Error()
+			return GetErrorHTML(http.StatusInternalServerError, err)
 		}
 		return http.StatusOK, html
 	}
