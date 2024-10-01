@@ -190,8 +190,8 @@ func TestDefaultTemplateRenderer(t *testing.T) {
 
 	t.Run("Register and Fetch Default Templates", func(t *testing.T) {
 		renderer := createTemplateRenderer()
-		renderer.RegisterDefaultTemplates(internal.TemplateFiles)
-		renderer.RegisterDefaultAssets(internal.AssetsFiles)
+		renderer.RegisterDefaultTemplates(internal.TemplateFiles, "templates/")
+		renderer.RegisterDefaultAssets(internal.AssetsFiles, "assets/")
 
 		html, err := renderer.RenderTemplate("root.html", map[string]interface{}{})
 		if err != nil && !errors.Is(err, bytes.ErrTooLarge) {
@@ -225,7 +225,7 @@ func TestDefaultTemplateRenderer(t *testing.T) {
 
 	t.Run("RegisterDefaultAssets and Retrieve Assets", func(t *testing.T) {
 		renderer := createTemplateRenderer()
-		renderer.RegisterDefaultAssets(internal.TemplateFiles)
+		renderer.RegisterDefaultAssets(internal.TemplateFiles, "templates/")
 
 		_, err := renderer.GetAsset("root.html")
 		if err != nil {

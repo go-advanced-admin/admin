@@ -10,12 +10,12 @@ import (
 
 type TemplateRenderer interface {
 	RenderTemplate(name string, data map[string]interface{}) (string, error)
-	RegisterDefaultTemplates(templates embed.FS)
+	RegisterDefaultTemplates(templates embed.FS, prefix string)
 	RegisterCompositeDefaultTemplate(name string, baseNames ...string) error
 	RegisterDefaultData(data map[string]interface{}) error
 	AddCustomTemplate(name string, tmplText string) error
 	AddCustomCompositeTemplate(name string, baseNames ...string) error
-	RegisterDefaultAssets(assets embed.FS)
+	RegisterDefaultAssets(assets embed.FS, prefix string)
 	AddCustomAsset(name string, asset []byte)
 	GetAsset(name string) ([]byte, error)
 	RegisterLinkFunc(func(string) string)
@@ -27,9 +27,11 @@ type DefaultTemplateRenderer struct {
 	customCompositeTemplates  map[string][]string
 	defaultCompositeTemplates map[string][]string
 	defaultTemplates          embed.FS
+	defaultTemplatesPrefix    string
 	defaultData               map[string]interface{}
 	assets                    map[string]*[]byte
 	defaultAssets             embed.FS
+	defaultAssetsPrefix       string
 	linkFunc                  func(string) string
 	assetsFunc                func(string) string
 }
@@ -125,7 +127,7 @@ func (tr *DefaultTemplateRenderer) gatherTemplates(name string, entryName string
 		}
 	}
 
-	if tmplBytes, err := tr.defaultTemplates.ReadFile(fmt.Sprintf("templates/%s", name)); err == nil {
+	if tmplBytes, err := tr.defaultTemplates.ReadFile(fmt.Sprintf("%s%s", tr.defaultTemplatesPrefix, name)); err == nil {
 		if entryName == "" {
 			entryName = name
 		}
@@ -142,8 +144,9 @@ func (tr *DefaultTemplateRenderer) gatherTemplates(name string, entryName string
 	return entryName, nil, fmt.Errorf("template %s not found", name)
 }
 
-func (tr *DefaultTemplateRenderer) RegisterDefaultTemplates(templates embed.FS) {
+func (tr *DefaultTemplateRenderer) RegisterDefaultTemplates(templates embed.FS, prefix string) {
 	tr.defaultTemplates = templates
+	tr.defaultTemplatesPrefix = prefix
 }
 
 func (tr *DefaultTemplateRenderer) validateAndParseBases(tmpl *template.Template, baseNames []string) error {
@@ -164,7 +167,7 @@ func (tr *DefaultTemplateRenderer) validateAndParseBases(tmpl *template.Template
 			if err := tr.validateAndParseBases(tmpl, subBases); err != nil {
 				return err
 			}
-		} else if tmplBytes, err := tr.defaultTemplates.ReadFile(fmt.Sprintf("templates/%s", baseName)); err == nil {
+		} else if tmplBytes, err := tr.defaultTemplates.ReadFile(fmt.Sprintf("%s%s", tr.defaultTemplatesPrefix, baseName)); err == nil {
 			_, err = tmpl.New(baseName).Parse(string(tmplBytes))
 			if err != nil {
 				return fmt.Errorf("error parsing embedded template %s: %v", baseName, err)
@@ -265,8 +268,9 @@ func (tr *DefaultTemplateRenderer) templateFuncs() template.FuncMap {
 	}
 }
 
-func (tr *DefaultTemplateRenderer) RegisterDefaultAssets(assets embed.FS) {
+func (tr *DefaultTemplateRenderer) RegisterDefaultAssets(assets embed.FS, prefix string) {
 	tr.defaultAssets = assets
+	tr.defaultAssetsPrefix = prefix
 }
 
 func (tr *DefaultTemplateRenderer) AddCustomAsset(name string, asset []byte) {
@@ -280,7 +284,7 @@ func (tr *DefaultTemplateRenderer) GetAsset(name string) ([]byte, error) {
 	if exists {
 		return *assetPts, nil
 	}
-	return tr.defaultAssets.ReadFile(fmt.Sprintf("assets/%s", name))
+	return tr.defaultAssets.ReadFile(fmt.Sprintf("%s%s", tr.defaultAssetsPrefix, name))
 }
 
 func (tr *DefaultTemplateRenderer) RegisterLinkFunc(linkFunc func(string) string) {
