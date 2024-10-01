@@ -40,37 +40,24 @@ func TestGetPrimaryKeyGetter(t *testing.T) {
 }
 
 func TestModel_GetViewHandler(t *testing.T) {
-	permissionChecker := PermissionFunc(func(req PermissionRequest, data interface{}) (bool, error) {
-		return true, nil
-	})
-
-	app := &App{
-		Name: "App",
-		Panel: &AdminPanel{
-			ORM: &MockORMIntegrator{},
-			Web: &MockWebIntegrator{},
-			Config: AdminConfig{
-				DefaultInstancesPerPage: 10,
-				Renderer:                NewDefaultTemplateRenderer(),
-			},
-			PermissionChecker: permissionChecker,
-		},
+	panel, err := NewAdminPanel(&MockORMIntegrator{}, &MockWebIntegrator{}, MockPermissionFunc, nil)
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	testApp, err := panel.RegisterApp("TestApp", "Test App")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
 	}
 
-	model := Model{
-		Name: "TestModel",
-		App:  app,
-		Fields: []FieldConfig{
-			{Name: "Name", IncludeInListFetch: true},
-			{Name: "ID", IncludeInListFetch: true},
-		},
-		PrimaryKeyGetter: func(instance interface{}) interface{} { return instance.(TestModel).ID },
+	model, err := testApp.RegisterModel(&TestModel{})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
 	}
 
 	handler := model.GetViewHandler()
 	code, _ := handler(map[string]string{"page": "1", "perPage": "10"})
 
-	if code != http.StatusInternalServerError {
+	if code != http.StatusOK {
 		t.Errorf("expected %v, got %v", http.StatusOK, code)
 	}
 
