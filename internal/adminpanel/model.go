@@ -44,6 +44,14 @@ func (m *Model) GetFullLink() string {
 	return m.App.Panel.Config.GetLink(m.GetLink())
 }
 
+func (m *Model) GetAddLink() string {
+	return fmt.Sprintf("%s/add", m.GetLink())
+}
+
+func (m *Model) GetFullAddLink() string {
+	return m.App.Panel.Config.GetLink(m.GetAddLink())
+}
+
 func (m *Model) GetViewHandler() HandlerFunc {
 	return func(data interface{}) (uint, string) {
 		var page, perPage uint
