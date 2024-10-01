@@ -25,7 +25,7 @@
         <ul>
             {{  range .instances }}
                 <li>
-                    {{- $instance := . -}}
+                    {{- $instance := .Data -}}
                     {{- range $index, $fieldConfig := $.model.Fields -}}
                         {{- if $fieldConfig.IncludeInListDisplay -}}
                             {{ $fieldConfig.DisplayName }}: {{ with $val := getFieldValue $instance $fieldConfig.Name }}{{ $val }}{{ else }}<span>Field not available</span>{{ end }},
