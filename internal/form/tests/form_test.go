@@ -72,7 +72,7 @@ func TestGetCleanData(t *testing.T) {
 	}
 
 	cleanValues, err = form.GetCleanData(baseForm, values)
-	assert.NotNil(t, err)
+	assert.Nil(t, err)
 	assert.NotNil(t, cleanValues)
 	assert.Equal(t, "Jane Doe", cleanValues["name"])
 	assert.Equal(t, "29", cleanValues["age"])
