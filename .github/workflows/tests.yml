@@ -20,12 +20,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Docker Compose
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y docker-compose
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Build and Test with Docker Compose
-        run: |
-          cd "${GITHUB_WORKSPACE}"
-          docker-compose up --build --abort-on-container-exit
+      - name: Run Docker Compose Tests
+        uses: whoan/docker-compose-action@v0.8.1
+        with:
+          args: up --build --abort-on-container-exit
