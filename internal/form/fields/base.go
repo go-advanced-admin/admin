@@ -1,0 +1,42 @@
+package fields
+
+import (
+	"errors"
+	"github.com/go-advanced-admin/admin/internal/form"
+)
+
+type BaseField struct {
+	Name            string
+	ValidationFuncs []form.FieldValidationFunc
+	InitialValue    interface{}
+}
+
+func (f *BaseField) GetName() string {
+	return f.Name
+}
+
+func (f *BaseField) RegisterInitialValue(value interface{}) {
+	f.InitialValue = value
+}
+
+func (f *BaseField) GetValidationFunctions() []form.FieldValidationFunc {
+	if f.ValidationFuncs == nil {
+		return make([]form.FieldValidationFunc, 0)
+	}
+	return f.ValidationFuncs
+}
+
+func (f *BaseField) RegisterName(name string) error {
+	if name == "" {
+		return errors.New("field name cannot be empty")
+	}
+	f.Name = name
+	return nil
+}
+
+func (f *BaseField) RegisterValidationFunctions(validationFuncs ...form.FieldValidationFunc) {
+	if f.ValidationFuncs == nil {
+		f.ValidationFuncs = make([]form.FieldValidationFunc, 0)
+	}
+	f.ValidationFuncs = append(f.ValidationFuncs, validationFuncs...)
+}

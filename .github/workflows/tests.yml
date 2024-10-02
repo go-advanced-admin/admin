@@ -11,7 +11,7 @@ on:
       - main
 
 jobs:
-  test:
+  test-root:
     runs-on: ubuntu-latest
 
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
@@ -25,20 +25,64 @@ jobs:
         with:
           go-version: '1.23'
 
-
       - name: Cache Go Modules
-        id: cache-modules
+        id: cache-modules-root
         uses: actions/cache@v4
         with:
           path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+            ~/.cache/go-build/root
+            ~/go/pkg/mod/root
+          key: ${{ runner.os }}-go-root-${{ hashFiles('go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-go-
+            ${{ runner.os }}-go-root-
 
-      - name: Install dependencies
+      - name: Set GOPATH and GOCACHE for root
+        run: |
+          echo "GOPATH=${HOME}/go/root" >> $GITHUB_ENV
+          echo "GOCACHE=${HOME}/.cache/go-build/root" >> $GITHUB_ENV
+
+      - name: Install dependencies for root module
+        working-directory: .
         run: go mod download
 
-      - name: Run tests
+      - name: Run tests for root module
+        working-directory: .
+        run: go test -v ./...
+
+  test-internal:
+    runs-on: ubuntu-latest
+
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+
+      - name: Cache Go Modules
+        id: cache-modules-internal
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build/internal
+            ~/go/pkg/mod/internal
+          key: ${{ runner.os }}-go-internal-${{ hashFiles('internal/form/tests/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-internal-
+
+      - name: Set GOPATH and GOCACHE for internal
+        run: |
+          echo "GOPATH=${HOME}/go/internal" >> $GITHUB_ENV
+          echo "GOCACHE=${HOME}/.cache/go-build/internal" >> $GITHUB_ENV
+
+      - name: Install dependencies for internal form tests module
+        working-directory: ./internal/form/tests
+        run: go mod download
+
+      - name: Run tests for internal form tests module
+        working-directory: ./internal/form/tests
         run: go test -v ./...
