@@ -11,17 +11,23 @@
 
 <body class="min-h-screen bg-base-200">
     <div class="drawer lg:drawer-open">
-        <input id="my-drawer" type="checkbox" class="drawer-toggle" />
+        <input id="sidebar" type="checkbox" class="drawer-toggle" />
         <div class="drawer-content min-h-full bg-base-200">
             <!-- Navbar -->
             <div class="navbar bg-base-300">
                 <div class="navbar-start">
+                    <h1 class="font-semibold text-xl hidden lg:block">Go Advanced Admin</h1>
+
                     <!-- Button to open the drawer -->
-                    <label for="my-drawer" class="btn btn-primary drawer-button lg:hidden">☰</label>
+                    <label for="sidebar" class="btn btn-primary drawer-button lg:hidden">☰</label>
+                </div>
+
+                <div class="navbar-center lg:hidden">
+                    <h1 class="font-semibold text-xl">Go Advanced Admin</h1>
                 </div>
 
                 <div class="navbar-end text-sm whitespace-pre">
-                    <h2 class="text-2x1 font-semibold m1-2">Welcome, User. </h2>
+                    <h2 class="text-2x1 font-semibold m1-2 hidden lg:block">Welcome, User. </h2>
                     <a class="link" href="https://google.com">View Site</a>
                     <a> / </a>
                     <a class="link" href="https://google.com">Change Password</a>
@@ -106,7 +112,7 @@
 
         <!-- Sidebar -->
         <div class="drawer-side">
-            <label for="my-drawer" class="drawer-overlay"></label>
+            <label for="sidebar" class="drawer-overlay"></label>
             <ul class="menu w-60 min-h-screen overflow-y-scroll bg-base-100 text-base-content">
                 <!-- Sidebar content here -->
 
@@ -117,8 +123,8 @@
                 </li>
 
                 <li class="hover:bg-transparent p-2">
-                    <label class="input input-bordered input-xs w-full p-0 px-2">
-                        <input placeholder="Begin typing to search..." class="" />
+                    <label class="flex input input-bordered input-xs w-full p-0 px-2">
+                        <input placeholder="Begin typing to search..." class="m-auto" />
                     </label>
                 </li>
 
