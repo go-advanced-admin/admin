@@ -11,6 +11,7 @@ type Field interface {
 	GetName() string
 	RegisterName(name string) error
 	RegisterInitialValue(value interface{})
+	SetSupersedingAttribute(name string, value *string)
 }
 
 func FieldValueIsValid(field Field, value interface{}) ([]error, error) {
