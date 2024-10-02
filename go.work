@@ -5,4 +5,5 @@ use (
 	web-integrations/echo
 	orm-integrations/gorm
 	.
+	internal/form/tests
 )
