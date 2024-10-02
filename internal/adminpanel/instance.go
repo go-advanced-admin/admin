@@ -2,6 +2,9 @@ package adminpanel
 
 import (
 	"fmt"
+	"github.com/go-advanced-admin/admin/internal/form"
+	"github.com/go-advanced-admin/admin/internal/form/fields"
+	"github.com/go-advanced-admin/admin/internal/form/forms"
 	"github.com/go-advanced-admin/admin/internal/utils"
 	"net/http"
 	"reflect"
@@ -109,5 +112,124 @@ func (m *Model) GetInstanceViewHandler() HandlerFunc {
 			return GetErrorHTML(http.StatusInternalServerError, err)
 		}
 		return http.StatusOK, html
+	}
+}
+
+func (m *Model) NewAddForm() (form.Form, error) {
+	f := &forms.BaseForm{}
+
+	for _, fieldConfig := range m.Fields {
+		if !fieldConfig.IncludeInAddForm {
+			continue
+		}
+
+		var formField form.Field
+		switch fieldConfig.FieldType.Kind() {
+		case reflect.String:
+			formField = &fields.TextField{}
+		default:
+			continue
+		}
+		err := f.AddField(fieldConfig.Name, formField)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return f, nil
+}
+
+func (m *Model) GetAddHandler() HandlerFunc {
+	return func(data interface{}) (uint, string) {
+		allowed, err := m.App.Panel.PermissionChecker.HasModelCreatePermission(m.App.Name, m.Name, data)
+		if err != nil {
+			return GetErrorHTML(http.StatusInternalServerError, err)
+		}
+		if !allowed {
+			return GetErrorHTML(http.StatusForbidden, fmt.Errorf("forbidden"))
+		}
+
+		formInstance, err := m.NewAddForm()
+		if err != nil {
+			return GetErrorHTML(http.StatusInternalServerError, err)
+		}
+
+		method := m.App.Panel.Web.GetRequestMethod(data)
+		if method == "GET" {
+			apps, err := GetAppsWithReadPermissions(m.App.Panel, data)
+			if err != nil {
+				return GetErrorHTML(http.StatusInternalServerError, err)
+			}
+
+			html, err := m.App.Panel.Config.Renderer.RenderTemplate("new_instance.html", map[string]interface{}{
+				"apps":      apps,
+				"form":      formInstance,
+				"model":     m,
+				"formErrs":  make([]error, 0),
+				"fieldErrs": make(map[string][]error),
+			})
+			if err != nil {
+				return GetErrorHTML(http.StatusInternalServerError, err)
+			}
+			return http.StatusOK, html
+		} else if method == "POST" {
+			formData := m.App.Panel.Web.GetFormData(data)
+			convertedFormData, err := form.ConvertFormDataToHTMLTypeMap(formData)
+			if err != nil {
+				return GetErrorHTML(http.StatusInternalServerError, err)
+			}
+			cleanFormData, err := form.GetCleanData(formInstance, convertedFormData)
+			if err != nil {
+				return GetErrorHTML(http.StatusInternalServerError, err)
+			}
+			formErrs, fieldErrs, err := form.ValuesAreValid(formInstance, cleanFormData)
+			if err != nil {
+				return GetErrorHTML(http.StatusInternalServerError, err)
+			}
+			containsError := false
+			if len(formErrs) > 0 {
+				containsError = true
+			}
+			for _, errs := range fieldErrs {
+				if len(errs) > 0 {
+					containsError = true
+					break
+				}
+			}
+
+			if containsError {
+				err = formInstance.RegisterInitialValues(cleanFormData)
+
+				apps, err := GetAppsWithReadPermissions(m.App.Panel, data)
+				if err != nil {
+					return GetErrorHTML(http.StatusInternalServerError, err)
+				}
+
+				html, err := m.App.Panel.Config.Renderer.RenderTemplate("new_instance.html", map[string]interface{}{
+					"apps":      apps,
+					"form":      formInstance,
+					"model":     m,
+					"formErrs":  formErrs,
+					"fieldErrs": fieldErrs,
+				})
+				if err != nil {
+					return GetErrorHTML(http.StatusInternalServerError, err)
+				}
+				return http.StatusOK, html
+			}
+
+			instanceInterface, err := formInstance.Save(convertedFormData)
+			if err != nil {
+				return GetErrorHTML(http.StatusInternalServerError, err)
+			}
+
+			instance, ok := instanceInterface.(Instance)
+			if !ok {
+				return GetErrorHTML(http.StatusInternalServerError, fmt.Errorf("form.Save() return type is not of type Instance"))
+			}
+
+			return http.StatusFound, instance.GetLink()
+		} else {
+			return GetErrorHTML(http.StatusMethodNotAllowed, fmt.Errorf("method not allowed"))
+		}
 	}
 }

@@ -55,12 +55,12 @@ func (b *BaseForm) RegisterInitialValues(values map[string]interface{}) error {
 	return nil
 }
 
-func (b *BaseForm) Save(values map[string]form.HTMLType) (string, error) {
+func (b *BaseForm) Save(values map[string]form.HTMLType) (interface{}, error) {
 	log.Println("Saving form", values)
 	cleanValues, err := form.GetCleanData(b, values)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	log.Println("Clean values", cleanValues)
-	return "", nil
+	return nil, nil
 }

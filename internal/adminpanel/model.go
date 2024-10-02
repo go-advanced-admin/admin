@@ -10,10 +10,12 @@ import (
 type FieldConfig struct {
 	Name                  string
 	DisplayName           string
+	FieldType             reflect.Type
 	IncludeInListFetch    bool
 	IncludeInListDisplay  bool
 	IncludeInSearch       bool
 	IncludeInInstanceView bool
+	IncludeInAddForm      bool
 }
 
 type Model struct {

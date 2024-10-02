@@ -61,6 +61,7 @@ func (a *App) RegisterModel(model interface{}) (*Model, error) {
 		includeInFetch := true
 		includeInSearch := true
 		includeInInstanceView := true
+		includeInAddForm := true
 
 		tag := field.Tag.Get("admin")
 		if tag != "" {
@@ -104,6 +105,14 @@ func (a *App) RegisterModel(model interface{}) (*Model, error) {
 					} else {
 						return nil, fmt.Errorf("invalid value for 'view' tag: %s", value)
 					}
+				case "addForm":
+					if value == "exclude" {
+						includeInAddForm = false
+					} else if value == "include" {
+						includeInAddForm = true
+					} else {
+						return nil, fmt.Errorf("invalid value for 'addForm' tag: %s", value)
+					}
 				case "displayName":
 					fieldDisplayName = value
 				default:
@@ -119,13 +128,17 @@ func (a *App) RegisterModel(model interface{}) (*Model, error) {
 			}
 		}
 
+		fieldType := field.Type
+
 		fields = append(fields, FieldConfig{
 			Name:                  fieldName,
 			DisplayName:           fieldDisplayName,
+			FieldType:             fieldType,
 			IncludeInListDisplay:  includeInList,
 			IncludeInListFetch:    includeInFetch,
 			IncludeInSearch:       includeInSearch,
 			IncludeInInstanceView: includeInInstanceView,
+			IncludeInAddForm:      includeInAddForm,
 		})
 	}
 
@@ -157,6 +170,8 @@ func (a *App) RegisterModel(model interface{}) (*Model, error) {
 	a.Panel.Web.HandleRoute("GET", a.Panel.Config.GetPrefix()+modelInstance.GetLink(), modelInstance.GetViewHandler())
 	a.Panel.Web.HandleRoute("GET", a.Panel.Config.GetPrefix()+modelInstance.GetLink()+"/:id", modelInstance.GetInstanceViewHandler())
 	a.Panel.Web.HandleRoute("DELETE", a.Panel.Config.GetPrefix()+modelInstance.GetLink()+"/:id", modelInstance.GetInstanceDeleteHandler())
+	a.Panel.Web.HandleRoute("GET", a.Panel.Config.GetPrefix()+modelInstance.GetLink()+"/add", modelInstance.GetAddHandler())
+	a.Panel.Web.HandleRoute("POST", a.Panel.Config.GetPrefix()+modelInstance.GetLink()+"/add", modelInstance.GetAddHandler())
 	a.ModelsSlice = append(a.ModelsSlice, modelInstance)
 	a.Models[name] = modelInstance
 	return modelInstance, nil

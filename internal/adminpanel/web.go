@@ -7,4 +7,6 @@ type WebIntegrator interface {
 	ServeAssets(prefix string, renderer TemplateRenderer)
 	GetQueryParam(ctx interface{}, name string) string
 	GetPathParam(ctx interface{}, name string) string
+	GetRequestMethod(ctx interface{}) string
+	GetFormData(ctx interface{}) map[string][]string
 }
