@@ -20,12 +20,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
       - name: Install Docker Compose
         run: |
           sudo apt-get update
@@ -33,4 +27,5 @@ jobs:
 
       - name: Build and Test with Docker Compose
         run: |
+          cd "${GITHUB_WORKSPACE}"
           docker-compose up --build --abort-on-container-exit
