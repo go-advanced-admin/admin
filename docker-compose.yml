@@ -1,0 +1,12 @@
+services:
+  root-tests:
+    build:
+      dockerfile: testing/Dockerfile-root
+    volumes:
+      - .:/app
+
+  internal-tests:
+    build:
+      dockerfile: testing/Dockerfile-internal-forms-tests
+    volumes:
+      - .:/app
