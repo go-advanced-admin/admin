@@ -8,7 +8,7 @@ type Form interface {
 	RegisterValidationFunctions(validationFuncs ...ValidationFunc)
 	GetValidationFunctions() []ValidationFunc
 	RegisterInitialValues(values map[string]interface{}) error
-	Save(values map[string]HTMLType) error
+	Save(values map[string]HTMLType) (string, error)
 }
 
 func ValuesAreValid(form Form, values map[string]interface{}) ([]error, map[string][]error, error) {
