@@ -22,7 +22,7 @@
             </div>
 
             <div class="navbar-end text-sm whitespace-pre">
-                <h2 class="text-2x1 font-semibold m1-2 whitespace-pre">Welcome, User. </h2>
+                <h2 class="text-2x1 font-semibold m1-2">Welcome, User. </h2>
                 <a class="link" href="https://google.com">View Site</a>
                 <a> / </a>
                 <a class="link" href="https://google.com">Change Password</a>
@@ -67,7 +67,7 @@
     <!-- Sidebar -->
     <div class="drawer-side">
         <label for="my-drawer" class="drawer-overlay"></label>
-        <ul class="menu p-4 w-60 h-full bg-base-100 text-base-content">
+        <ul class="menu w-60 min-h-screen overflow-y-scroll bg-base-100 text-base-content">
             <!-- Sidebar content here -->
 
             <li>
@@ -76,9 +76,13 @@
                 </div>
             </li>
 
-            <li class="hover:bg-transparent">
-                <div class="divider hover:bg-transparent c:bg-transparent"></div>
+            <li class="hover:bg-transparent p-2">
+                <label class="input input-bordered input-xs w-full p-0 px-2">
+                    <input placeholder="Begin typing to search..." class=""/>
+                </label>
             </li>
+
+
 
 
             {{ range .apps }}
