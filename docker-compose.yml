@@ -5,10 +5,3 @@ services:
       dockerfile: testing/Dockerfile-root
     volumes:
       - .:/app
-
-  internal-tests:
-    build:
-      context: .
-      dockerfile: testing/Dockerfile-internal-forms-tests
-    volumes:
-      - .:/app
