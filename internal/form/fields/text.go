@@ -63,7 +63,7 @@ func (f *TextField) HTML() (string, error) {
 		if value == nil {
 			attributes = append(attributes, key)
 		} else {
-			attributes = append(attributes, fmt.Sprintf(`%s="%s""`, key, template.HTMLEscapeString(*value)))
+			attributes = append(attributes, fmt.Sprintf(`%s="%s"`, key, template.HTMLEscapeString(*value)))
 		}
 	}
 
