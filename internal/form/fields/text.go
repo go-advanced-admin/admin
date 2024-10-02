@@ -19,30 +19,55 @@ type TextField struct {
 }
 
 func (f *TextField) HTML() (string, error) {
-	attributes := make([]string, 0)
+	attributesMap := make(map[string]*string)
 	if f.InitialValue != nil {
 		htmlType, err := f.GoTypeToHTMLType(f.InitialValue)
 		if err != nil {
 			return "", err
 		}
-		attributes = append(attributes, fmt.Sprintf(`value="%s"`, template.HTMLEscapeString(string(htmlType))))
+		value := template.HTMLEscapeString(string(htmlType))
+		attributesMap["value"] = &value
 	}
 	if f.Placeholder != nil {
-		attributes = append(attributes, fmt.Sprintf(`placeholder="%s"`, template.HTMLEscapeString(*f.Placeholder)))
+		value := template.HTMLEscapeString(*f.Placeholder)
+		attributesMap["placeholder"] = &value
 	}
 	if f.MaxLength != nil {
-		attributes = append(attributes, fmt.Sprintf(`maxlength="%d"`, *f.MaxLength))
+		value := fmt.Sprintf("%d", *f.MaxLength)
+		attributesMap["maxlength"] = &value
 	}
 	if f.MinLength != nil {
-		attributes = append(attributes, fmt.Sprintf(`minlength="%d"`, *f.MinLength))
+		value := fmt.Sprintf("%d", *f.MinLength)
+		attributesMap["minlength"] = &value
 	}
 	if f.Required {
-		attributes = append(attributes, `required`)
+		attributesMap["required"] = nil
 	}
 	if f.Regex != nil {
-		attributes = append(attributes, fmt.Sprintf(`pattern="%s"`, template.HTMLEscapeString(*f.Regex)))
+		value := template.HTMLEscapeString(*f.Regex)
+		attributesMap["pattern"] = &value
 	}
-	return fmt.Sprintf(`<input type="text" name="%s" %s>`, template.HTMLEscapeString(f.Name), strings.Join(attributes, " ")), nil
+	value := "text"
+	attributesMap["type"] = &value
+	value = template.HTMLEscapeString(f.Name)
+	attributesMap["name"] = &value
+
+	if f.SupersedingAttributes != nil {
+		for key, value := range f.SupersedingAttributes {
+			attributesMap[key] = value
+		}
+	}
+
+	attributes := make([]string, 0)
+	for key, value := range attributesMap {
+		if value == nil {
+			attributes = append(attributes, key)
+		} else {
+			attributes = append(attributes, fmt.Sprintf("%s=%s", key, template.HTMLEscapeString(*value)))
+		}
+	}
+
+	return fmt.Sprintf(`<input %s>`, strings.Join(attributes, " ")), nil
 }
 
 func (f *TextField) GoTypeToHTMLType(value interface{}) (form.HTMLType, error) {

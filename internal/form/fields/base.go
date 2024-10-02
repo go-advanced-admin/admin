@@ -6,9 +6,10 @@ import (
 )
 
 type BaseField struct {
-	Name            string
-	ValidationFuncs []form.FieldValidationFunc
-	InitialValue    interface{}
+	Name                  string
+	ValidationFuncs       []form.FieldValidationFunc
+	InitialValue          interface{}
+	SupersedingAttributes map[string]*string
 }
 
 func (f *BaseField) GetName() string {
@@ -39,4 +40,11 @@ func (f *BaseField) RegisterValidationFunctions(validationFuncs ...form.FieldVal
 		f.ValidationFuncs = make([]form.FieldValidationFunc, 0)
 	}
 	f.ValidationFuncs = append(f.ValidationFuncs, validationFuncs...)
+}
+
+func (f *BaseField) SetSupersedingAttribute(name string, value *string) {
+	if f.SupersedingAttributes == nil {
+		f.SupersedingAttributes = make(map[string]*string)
+	}
+	f.SupersedingAttributes[name] = value
 }
