@@ -22,9 +22,9 @@ func (m *MockWebIntegrator) GetRequestMethod(ctx interface{}) string {
 	}
 	return ""
 }
-func (m *MockWebIntegrator) GetFormData(ctx interface{}, name string) string {
-	if form, ok := ctx.(map[string]string); ok {
-		return form[name]
+func (m *MockWebIntegrator) GetFormData(ctx interface{}) map[string][]string {
+	if form, ok := ctx.(map[string][]string); ok {
+		return form
 	}
-	return ""
+	return make(map[string][]string)
 }
