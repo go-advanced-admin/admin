@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/glebarez/sqlite"
 	"github.com/go-advanced-admin/admin"
 	"github.com/go-advanced-admin/orm-gorm"
@@ -22,13 +23,13 @@ type TestModel2 struct {
 }
 
 type TestModel3 struct {
-	ID   uint `gorm:"primarykey"`
-	Name string
+	ID       uint `gorm:"primarykey"`
+	Username string
 }
 
 type TestModel4 struct {
-	ID   uint `gorm:"primarykey"`
-	Name string
+	ID    uint `gorm:"primarykey"`
+	Title string
 }
 
 func main() {
@@ -52,6 +53,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	populateTestModels(db)
 
 	orm := admingorm.NewIntegrator(db)
 
@@ -94,4 +97,30 @@ func main() {
 	}
 
 	e.Logger.Fatal(e.Start(":8080"))
+}
+
+func populateTestModels(db *gorm.DB) {
+	for i := 0; i < 100; i++ {
+		db.Create(&TestModel1{
+			Name: fmt.Sprintf("Name%d", i),
+		})
+	}
+
+	for i := 0; i < 100; i++ {
+		db.Create(&TestModel2{
+			Name: fmt.Sprintf("Product%d", i),
+		})
+	}
+
+	for i := 0; i < 100; i++ {
+		db.Create(&TestModel3{
+			Username: fmt.Sprintf("user%d", i),
+		})
+	}
+
+	for i := 0; i < 100; i++ {
+		db.Create(&TestModel4{
+			Title: fmt.Sprintf("Post Title %d", i),
+		})
+	}
 }
