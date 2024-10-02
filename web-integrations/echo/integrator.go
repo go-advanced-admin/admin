@@ -49,3 +49,13 @@ func (i *Integrator) GetPathParam(ctx interface{}, name string) string {
 	ec := ctx.(echo.Context)
 	return ec.Param(name)
 }
+
+func (i *Integrator) GetRequestMethod(ctx interface{}) string {
+	ec := ctx.(echo.Context)
+	return ec.Request().Method
+}
+
+func (i *Integrator) GetFormData(ctx interface{}) map[string][]string {
+	ec := ctx.(echo.Context)
+	return ec.Request().Form
+}

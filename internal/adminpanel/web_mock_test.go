@@ -16,3 +16,15 @@ func (m *MockWebIntegrator) GetPathParam(ctx interface{}, name string) string {
 	}
 	return ""
 }
+func (m *MockWebIntegrator) GetRequestMethod(ctx interface{}) string {
+	if request, ok := ctx.(map[string]string); ok {
+		return request["method"]
+	}
+	return ""
+}
+func (m *MockWebIntegrator) GetFormData(ctx interface{}, name string) string {
+	if form, ok := ctx.(map[string]string); ok {
+		return form[name]
+	}
+	return ""
+}
