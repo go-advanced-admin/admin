@@ -265,6 +265,9 @@ func (tr *DefaultTemplateRenderer) templateFuncs() template.FuncMap {
 			}
 			return value, nil
 		},
+		"safeHTML": func(html string) template.HTML {
+			return template.HTML(html)
+		},
 	}
 }
 
