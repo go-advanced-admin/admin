@@ -43,7 +43,7 @@ func main() {
 		return true, nil
 	}
 
-	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("Failed to connect database: %v", err)
 	}
