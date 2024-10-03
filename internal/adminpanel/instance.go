@@ -226,6 +226,12 @@ func (m *Model) NewAddForm() (form.Form, error) {
 		switch fieldConfig.FieldType.Kind() {
 		case reflect.String:
 			formField = &fields.TextField{}
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			formField = &fields.IntegerField{}
+		case reflect.Float32, reflect.Float64:
+			formField = &fields.FloatField{}
+		case reflect.Bool:
+			formField = &fields.BooleanField{}
 		default:
 			continue
 		}
@@ -252,6 +258,12 @@ func (m *Model) NewEditForm(instanceID interface{}) (form.Form, error) {
 		switch fieldConfig.FieldType.Kind() {
 		case reflect.String:
 			formField = &fields.TextField{}
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			formField = &fields.IntegerField{}
+		case reflect.Float32, reflect.Float64:
+			formField = &fields.FloatField{}
+		case reflect.Bool:
+			formField = &fields.BooleanField{}
 		default:
 			continue
 		}
