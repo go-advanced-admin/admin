@@ -148,7 +148,14 @@ func (f *ModelAddForm) Save(values map[string]form.HTMLType) (interface{}, error
 		}
 	}
 
-	err = f.Model.App.Panel.ORM.CreateInstance(instancePtr.Interface())
+	fieldsToInclude := make([]string, 0)
+	for _, field := range f.Model.Fields {
+		if field.IncludeInAddForm {
+			fieldsToInclude = append(fieldsToInclude, field.Name)
+		}
+	}
+
+	err = f.Model.App.Panel.ORM.CreateInstanceOnlyFields(instancePtr.Interface(), fieldsToInclude)
 	if err != nil {
 		return nil, err
 	}
