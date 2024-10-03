@@ -16,14 +16,15 @@
             </div>
 
             <div class="navbar-end text-sm whitespace-pre">
-                {{ $first := true}}
-                {{ range .navBarItems }}
-                    {{ if not $first }}
+{{/*                TODO make this look good*/}}
+                {{- $first := true }}
+                {{- range .navBarItems -}}
+                    {{- if not $first -}}
                         <a> / </a>
-                    {{ end }}
-                    {{ safeHTML .HTML }}
-                    {{ $first = false }}
-                {{ end }}
+                    {{- end -}}
+                    {{- safeHTML .HTML -}}
+                    {{- $first = false -}}
+                {{- end -}}
 
                 <!-- theme swap -->
                 <label class="swap swap-rotate pl-2">
