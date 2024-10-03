@@ -178,10 +178,12 @@ func (a *App) RegisterModel(model interface{}) (*Model, error) {
 		PrimaryKeyType:   primaryKeyType,
 	}
 	a.Panel.Web.HandleRoute("GET", a.Panel.Config.GetPrefix()+modelInstance.GetLink(), modelInstance.GetViewHandler())
-	a.Panel.Web.HandleRoute("GET", a.Panel.Config.GetPrefix()+modelInstance.GetLink()+"/:id", modelInstance.GetInstanceViewHandler())
-	a.Panel.Web.HandleRoute("DELETE", a.Panel.Config.GetPrefix()+modelInstance.GetLink()+"/:id", modelInstance.GetInstanceDeleteHandler())
+	a.Panel.Web.HandleRoute("GET", a.Panel.Config.GetPrefix()+modelInstance.GetLink()+"/:id/view", modelInstance.GetInstanceViewHandler())
+	a.Panel.Web.HandleRoute("DELETE", a.Panel.Config.GetPrefix()+modelInstance.GetLink()+"/:id/view", modelInstance.GetInstanceDeleteHandler())
 	a.Panel.Web.HandleRoute("GET", a.Panel.Config.GetPrefix()+modelInstance.GetLink()+"/add", modelInstance.GetAddHandler())
 	a.Panel.Web.HandleRoute("POST", a.Panel.Config.GetPrefix()+modelInstance.GetLink()+"/add", modelInstance.GetAddHandler())
+	a.Panel.Web.HandleRoute("GET", a.Panel.Config.GetPrefix()+modelInstance.GetLink()+"/:id/edit", modelInstance.GetEditHandler())
+	a.Panel.Web.HandleRoute("POST", a.Panel.Config.GetPrefix()+modelInstance.GetLink()+"/:id/edit", modelInstance.GetEditHandler())
 	a.ModelsSlice = append(a.ModelsSlice, modelInstance)
 	a.Models[name] = modelInstance
 	return modelInstance, nil
