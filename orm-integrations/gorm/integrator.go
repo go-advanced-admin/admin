@@ -156,7 +156,30 @@ func (i *Integrator) FetchInstanceOnlyFields(model interface{}, id interface{}, 
 	}
 
 	return instance, nil
+}
 
+func (i *Integrator) FetchInstance(model interface{}, instanceID interface{}) (interface{}, error) {
+	modelType := reflect.TypeOf(model).Elem()
+	instance := reflect.New(modelType).Interface()
+
+	stmt := &gorm.Statement{DB: i.DB}
+	err := stmt.Parse(model)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse model: %v", err)
+	}
+
+	primaryField := stmt.Schema.PrioritizedPrimaryField
+	if primaryField == nil {
+		return nil, fmt.Errorf("no primary field found for model %s", modelType.Name())
+	}
+
+	primaryKey := primaryField.DBName
+	err = i.DB.Where(fmt.Sprintf("%s = ?", primaryKey), instanceID).First(instance, model).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return instance, nil
 }
 
 func (i *Integrator) CreateInstance(instance interface{}) error {

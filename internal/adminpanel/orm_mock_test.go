@@ -22,6 +22,10 @@ func (m *MockORMIntegrator) FetchInstanceOnlyFields(interface{}, interface{}, []
 	return nil, nil
 }
 
+func (m *MockORMIntegrator) FetchInstance(interface{}, interface{}) (interface{}, error) {
+	return nil, nil
+}
+
 func (m *MockORMIntegrator) CreateInstance(interface{}) error {
 	return nil
 }
