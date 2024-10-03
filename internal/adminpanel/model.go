@@ -164,6 +164,7 @@ func (m *Model) GetViewHandler() HandlerFunc {
 			"totalPages":  totalPages,
 			"currentPage": page,
 			"perPage":     perPage,
+			"navBarItems": m.App.Panel.Config.GetNavBarItems(data),
 		})
 		if err != nil {
 			return GetErrorHTML(http.StatusInternalServerError, err)

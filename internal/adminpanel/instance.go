@@ -104,8 +104,8 @@ func (m *Model) GetInstanceViewHandler() HandlerFunc {
 		}
 
 		html, err := m.App.Panel.Config.Renderer.RenderTemplate("instance", map[string]interface{}{
-			"model":    m,
-			"apps":     apps,
+			"model": m,
+			"apps":  apps, "navBarItems": m.App.Panel.Config.GetNavBarItems(data),
 			"instance": instanceData,
 		})
 		if err != nil {
@@ -298,7 +298,7 @@ func (m *Model) GetAddHandler() HandlerFunc {
 			}
 
 			html, err := m.App.Panel.Config.Renderer.RenderTemplate("new_instance", map[string]interface{}{
-				"apps":      apps,
+				"apps": apps, "navBarItems": m.App.Panel.Config.GetNavBarItems(data),
 				"form":      formInstance,
 				"model":     m,
 				"formErrs":  make([]error, 0),
@@ -345,7 +345,7 @@ func (m *Model) GetAddHandler() HandlerFunc {
 				}
 
 				html, err := m.App.Panel.Config.Renderer.RenderTemplate("new_instance", map[string]interface{}{
-					"apps":      apps,
+					"apps": apps, "navBarItems": m.App.Panel.Config.GetNavBarItems(data),
 					"form":      formInstance,
 					"model":     m,
 					"formErrs":  formErrs,
@@ -437,7 +437,7 @@ func (m *Model) GetEditHandler() HandlerFunc {
 			}
 
 			html, err := m.App.Panel.Config.Renderer.RenderTemplate("edit_instance", map[string]interface{}{
-				"apps":      apps,
+				"apps": apps, "navBarItems": m.App.Panel.Config.GetNavBarItems(data),
 				"form":      formInstance,
 				"model":     m,
 				"formErrs":  make([]error, 0),
@@ -484,7 +484,7 @@ func (m *Model) GetEditHandler() HandlerFunc {
 				}
 
 				html, err := m.App.Panel.Config.Renderer.RenderTemplate("edit_instance", map[string]interface{}{
-					"apps":      apps,
+					"apps": apps, "navBarItems": m.App.Panel.Config.GetNavBarItems(data),
 					"form":      formInstance,
 					"model":     m,
 					"formErrs":  formErrs,

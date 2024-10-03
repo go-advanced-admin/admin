@@ -16,12 +16,14 @@
             </div>
 
             <div class="navbar-end text-sm whitespace-pre">
-                <h2 class="text-2x1 font-semibold m1-2 hidden lg:block">Welcome, User. </h2>
-                <a class="link" href="https://google.com">View Site</a>
-                <a> / </a>
-                <a class="link" href="https://google.com">Change Password</a>
-                <a> / </a>
-                <a class="link" href="https://google.com">Logout</a>
+                {{ $first := true}}
+                {{ range .navBarItems }}
+                    {{ if not $first }}
+                        <a> / </a>
+                    {{ end }}
+                    {{ safeHTML .HTML }}
+                    {{ $first = false }}
+                {{ end }}
 
                 <!-- theme swap -->
                 <label class="swap swap-rotate pl-2">
