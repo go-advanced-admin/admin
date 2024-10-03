@@ -2,6 +2,8 @@ package adminpanel
 
 import (
 	"fmt"
+	"github.com/go-advanced-admin/admin/internal/form"
+	"github.com/go-advanced-admin/admin/internal/form/fields"
 	"github.com/go-advanced-admin/admin/internal/utils"
 	"net/http"
 	"reflect"
@@ -52,7 +54,7 @@ func (a *App) RegisterModel(model interface{}) (*Model, error) {
 		return nil, fmt.Errorf("admin model '%s' already exists in app '%s'. Models cannot be registered more than once", name, a.Name)
 	}
 
-	var fields []FieldConfig
+	var fieldConfigs []FieldConfig
 	for i := 0; i < modelType.NumField(); i++ {
 		field := modelType.Field(i)
 		fieldName := field.Name
@@ -63,6 +65,8 @@ func (a *App) RegisterModel(model interface{}) (*Model, error) {
 		includeInInstanceView := true
 		includeInAddForm := true
 		includeInEditForm := true
+		var formAddField form.Field
+		var formEditField form.Field
 
 		tag := field.Tag.Get("admin")
 		if tag != "" {
@@ -139,7 +143,30 @@ func (a *App) RegisterModel(model interface{}) (*Model, error) {
 
 		fieldType := field.Type
 
-		fields = append(fields, FieldConfig{
+		var formField form.Field
+		if includeInAddForm || includeInEditForm {
+			switch fieldType.Kind() {
+			case reflect.String:
+				formField = &fields.TextField{}
+			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+				formField = &fields.IntegerField{}
+			case reflect.Float32, reflect.Float64:
+				formField = &fields.FloatField{}
+			case reflect.Bool:
+				formField = &fields.BooleanField{}
+			default:
+				func() {}() // Nothing happens for this
+			}
+		}
+
+		if includeInAddForm {
+			formAddField = formField
+		}
+		if includeInEditForm {
+			formEditField = formField
+		}
+
+		fieldConfigs = append(fieldConfigs, FieldConfig{
 			Name:                  fieldName,
 			DisplayName:           fieldDisplayName,
 			FieldType:             fieldType,
@@ -147,8 +174,8 @@ func (a *App) RegisterModel(model interface{}) (*Model, error) {
 			IncludeInListFetch:    includeInFetch,
 			IncludeInSearch:       includeInSearch,
 			IncludeInInstanceView: includeInInstanceView,
-			IncludeInAddForm:      includeInAddForm,
-			IncludeInEditForm:     includeInEditForm,
+			AddFormField:          formAddField,
+			EditFormField:         formEditField,
 		})
 	}
 
@@ -173,7 +200,7 @@ func (a *App) RegisterModel(model interface{}) (*Model, error) {
 		DisplayName:      displayName,
 		PTR:              model,
 		App:              a,
-		Fields:           fields,
+		Fields:           fieldConfigs,
 		PrimaryKeyGetter: primaryKeyGetter,
 		PrimaryKeyType:   primaryKeyType,
 	}

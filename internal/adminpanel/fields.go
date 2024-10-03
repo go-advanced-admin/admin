@@ -1,6 +1,9 @@
 package adminpanel
 
-import "reflect"
+import (
+	"github.com/go-advanced-admin/admin/internal/form"
+	"reflect"
+)
 
 type FieldConfig struct {
 	Name                  string
@@ -10,6 +13,10 @@ type FieldConfig struct {
 	IncludeInListDisplay  bool
 	IncludeInSearch       bool
 	IncludeInInstanceView bool
-	IncludeInAddForm      bool
-	IncludeInEditForm     bool
+	AddFormField          form.Field
+	EditFormField         form.Field
+}
+
+type AdminFormFieldInterface interface {
+	AdminFormField(name string, isEdit bool) form.Field
 }
