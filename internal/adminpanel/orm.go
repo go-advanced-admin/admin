@@ -6,6 +6,7 @@ type ORMIntegrator interface {
 	FetchInstancesOnlyFieldWithSearch(model interface{}, fields []string, query string, searchFields []string) (interface{}, error)
 	DeleteInstance(model interface{}, id interface{}) error
 	FetchInstanceOnlyFields(model interface{}, id interface{}, fields []string) (interface{}, error)
+	FetchInstance(model interface{}, id interface{}) (interface{}, error)
 	CreateInstance(instance interface{}) error
 	UpdateInstance(instance interface{}, primaryKey interface{}) error
 	CreateInstanceOnlyFields(instance interface{}, fields []string) error
