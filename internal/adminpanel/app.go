@@ -62,6 +62,7 @@ func (a *App) RegisterModel(model interface{}) (*Model, error) {
 		includeInSearch := true
 		includeInInstanceView := true
 		includeInAddForm := true
+		includeInEditForm := true
 
 		tag := field.Tag.Get("admin")
 		if tag != "" {
@@ -113,6 +114,14 @@ func (a *App) RegisterModel(model interface{}) (*Model, error) {
 					} else {
 						return nil, fmt.Errorf("invalid value for 'addForm' tag: %s", value)
 					}
+				case "editForm":
+					if value == "exclude" {
+						includeInEditForm = false
+					} else if value == "include" {
+						includeInEditForm = true
+					} else {
+						return nil, fmt.Errorf("invalid value for 'editForm' tag: %s", value)
+					}
 				case "displayName":
 					fieldDisplayName = value
 				default:
@@ -139,6 +148,7 @@ func (a *App) RegisterModel(model interface{}) (*Model, error) {
 			IncludeInSearch:       includeInSearch,
 			IncludeInInstanceView: includeInInstanceView,
 			IncludeInAddForm:      includeInAddForm,
+			IncludeInEditForm:     includeInEditForm,
 		})
 	}
 
