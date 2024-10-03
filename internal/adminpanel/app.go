@@ -166,6 +166,18 @@ func (a *App) RegisterModel(model interface{}) (*Model, error) {
 			formEditField = formField
 		}
 
+		fieldGenerator, implemented := model.(AdminFormFieldInterface)
+		if implemented {
+			formFieldForAdd := fieldGenerator.AdminFormField(fieldName, false)
+			if formFieldForAdd != nil {
+				formAddField = formFieldForAdd
+			}
+			formFieldForEdit := fieldGenerator.AdminFormField(fieldName, true)
+			if formFieldForEdit != nil {
+				formEditField = formFieldForEdit
+			}
+		}
+
 		fieldConfigs = append(fieldConfigs, FieldConfig{
 			Name:                  fieldName,
 			DisplayName:           fieldDisplayName,
