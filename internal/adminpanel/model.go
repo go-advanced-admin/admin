@@ -156,7 +156,7 @@ func (m *Model) GetViewHandler() HandlerFunc {
 			cleanInstances[i] = cleanInstance
 		}
 
-		html, err := m.App.Panel.Config.Renderer.RenderTemplate("model.html", map[string]interface{}{
+		html, err := m.App.Panel.Config.Renderer.RenderTemplate("model", map[string]interface{}{
 			"apps":        apps,
 			"model":       m,
 			"instances":   cleanInstances,
