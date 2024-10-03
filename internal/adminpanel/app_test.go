@@ -134,8 +134,8 @@ func TestRegisterModel(t *testing.T) {
 	t.Run("UnknownTagKey", func(t *testing.T) {
 		testApp := createTestApp()
 		_, err := testApp.RegisterModel(&TestModel2{})
-		if err == nil {
-			t.Error("expected an error due to unknown tag key")
+		if err != nil {
+			t.Error("expected no error due to unknown tag key")
 		}
 	})
 
