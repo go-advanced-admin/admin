@@ -7,4 +7,7 @@ type ORMIntegrator interface {
 	DeleteInstance(model interface{}, id interface{}) error
 	FetchInstanceOnlyFields(model interface{}, id interface{}, fields []string) (interface{}, error)
 	CreateInstance(instance interface{}) error
+	UpdateInstance(instance interface{}) error
+	CreateInstanceOnlyFields(instance interface{}, fields []string) error
+	UpdateInstanceOnlyFields(instance interface{}, fields []string) error
 }

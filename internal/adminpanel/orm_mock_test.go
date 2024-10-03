@@ -25,3 +25,12 @@ func (m *MockORMIntegrator) FetchInstanceOnlyFields(interface{}, interface{}, []
 func (m *MockORMIntegrator) CreateInstance(interface{}) error {
 	return nil
 }
+func (m *MockORMIntegrator) UpdateInstance(interface{}) error {
+	return nil
+}
+func (m *MockORMIntegrator) CreateInstanceOnlyFields(interface{}, []string) error {
+	return nil
+}
+func (m *MockORMIntegrator) UpdateInstanceOnlyFields(interface{}, []string) error {
+	return nil
+}
