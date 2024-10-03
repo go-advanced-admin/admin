@@ -74,7 +74,12 @@ func (a *App) RegisterModel(model interface{}) (*Model, error) {
 			parsedTags := strings.Split(tag, ";")
 			for _, t := range parsedTags {
 				pair := strings.SplitN(t, ":", 2)
-				key, value := pair[0], pair[1]
+				var key, value string
+				if len(pair) >= 2 {
+					key, value = pair[0], pair[1]
+				} else {
+					key = pair[0]
+				}
 
 				switch key {
 				case "listDisplay":
@@ -128,8 +133,6 @@ func (a *App) RegisterModel(model interface{}) (*Model, error) {
 					}
 				case "displayName":
 					fieldDisplayName = value
-				default:
-					return nil, fmt.Errorf("unknown tag key: %s", key)
 				}
 			}
 			if !listFetchTagPresent {
@@ -148,14 +151,162 @@ func (a *App) RegisterModel(model interface{}) (*Model, error) {
 			switch fieldType.Kind() {
 			case reflect.String:
 				formField = &fields.TextField{}
+				if tag != "" {
+					parsedTags := strings.Split(tag, ";")
+					for _, t := range parsedTags {
+						pair := strings.SplitN(t, ":", 2)
+						var key, value string
+						if len(pair) >= 2 {
+							key, value = pair[0], pair[1]
+						} else {
+							key = pair[0]
+						}
+
+						switch key {
+						case "placeholder":
+							formField.(*fields.TextField).Placeholder = &value
+						case "required":
+							formField.(*fields.TextField).Required = true
+						case "regex":
+							formField.(*fields.TextField).Regex = &value
+						case "maxLength":
+							maxLengthInterface, err := utils.ConvertStringToType(value, reflect.TypeOf(uint(0)))
+							if err != nil {
+								return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, fieldType.Name(), err)
+							}
+							maxLength, ok := maxLengthInterface.(uint)
+							if !ok {
+								return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, fieldType.Name(), err)
+							}
+							formField.(*fields.TextField).MaxLength = &maxLength
+						case "minLength":
+							minLengthInterface, err := utils.ConvertStringToType(value, reflect.TypeOf(uint(0)))
+							if err != nil {
+								return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, fieldType.Name(), err)
+							}
+							minLength, ok := minLengthInterface.(uint)
+							if !ok {
+								return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, fieldType.Name(), err)
+							}
+							formField.(*fields.TextField).MinLength = &minLength
+						}
+					}
+				}
 			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 				formField = &fields.IntegerField{}
+				if tag != "" {
+					parsedTags := strings.Split(tag, ";")
+					for _, t := range parsedTags {
+						pair := strings.SplitN(t, ":", 2)
+						var key, value string
+						if len(pair) >= 2 {
+							key, value = pair[0], pair[1]
+						} else {
+							key = pair[0]
+						}
+
+						switch key {
+						case "required":
+							formField.(*fields.IntegerField).Required = true
+						case "max":
+							maxInterface, err := utils.ConvertStringToType(value, reflect.TypeOf(0))
+							if err != nil {
+								return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, fieldType.Name(), err)
+							}
+							maxValue, ok := maxInterface.(int)
+							if !ok {
+								return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, fieldType.Name(), err)
+							}
+							formField.(*fields.IntegerField).MaxValue = &maxValue
+						case "min":
+							minInterface, err := utils.ConvertStringToType(value, reflect.TypeOf(0))
+							if err != nil {
+								return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, fieldType.Name(), err)
+							}
+							minValue, ok := minInterface.(int)
+							if !ok {
+								return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, fieldType.Name(), err)
+							}
+							formField.(*fields.IntegerField).MinValue = &minValue
+						}
+					}
+				}
 			case reflect.Float32, reflect.Float64:
 				formField = &fields.FloatField{}
+				if tag != "" {
+					parsedTags := strings.Split(tag, ";")
+					for _, t := range parsedTags {
+						pair := strings.SplitN(t, ":", 2)
+						var key, value string
+						if len(pair) >= 2 {
+							key, value = pair[0], pair[1]
+						} else {
+							key = pair[0]
+						}
+
+						switch key {
+						case "required":
+							formField.(*fields.FloatField).Required = true
+						case "max":
+							maxInterface, err := utils.ConvertStringToType(value, reflect.TypeOf(float64(0)))
+							if err != nil {
+								return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, fieldType.Name(), err)
+							}
+							maxValue, ok := maxInterface.(float64)
+							if !ok {
+								return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, fieldType.Name(), err)
+							}
+							formField.(*fields.FloatField).MaxValue = &maxValue
+						case "min":
+							minInterface, err := utils.ConvertStringToType(value, reflect.TypeOf(float64(0)))
+							if err != nil {
+								return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, fieldType.Name(), err)
+							}
+							minValue, ok := minInterface.(float64)
+							if !ok {
+								return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, fieldType.Name(), err)
+							}
+							formField.(*fields.FloatField).MinValue = &minValue
+						}
+					}
+				}
 			case reflect.Bool:
 				formField = &fields.BooleanField{}
+				if tag != "" {
+					parsedTags := strings.Split(tag, ";")
+					for _, t := range parsedTags {
+						pair := strings.SplitN(t, ":", 2)
+						key := pair[0]
+
+						switch key {
+						case "required":
+							formField.(*fields.BooleanField).Required = true
+						}
+					}
+				}
 			default:
 				func() {}() // Nothing happens for this
+			}
+			if formField != nil && tag != "" {
+				parsedTags := strings.Split(tag, ";")
+				for _, t := range parsedTags {
+					pair := strings.SplitN(t, ":", 2)
+					var key, value string
+					if len(pair) >= 2 {
+						key, value = pair[0], pair[1]
+					} else {
+						key = pair[0]
+					}
+
+					switch key {
+					case "initial":
+						convertedValue, err := utils.ConvertStringToType(value, fieldType)
+						if err != nil {
+							return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, fieldType.Name(), err)
+						}
+						formField.RegisterInitialValue(convertedValue)
+					}
+				}
 			}
 		}
 
