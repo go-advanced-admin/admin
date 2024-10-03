@@ -27,7 +27,7 @@ func NewAdminPanel(orm ORMIntegrator, web WebIntegrator, permissionsCheck Permis
 		return nil, fmt.Errorf("permissions check function cannot be nil")
 	}
 	if config == nil {
-		config = &DefaultAdminConfig
+		config = NewDefaultAdminConfig()
 	}
 	admin := AdminPanel{
 		Apps:              make(map[string]*App),
