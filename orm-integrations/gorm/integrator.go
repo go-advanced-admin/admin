@@ -163,8 +163,22 @@ func (i *Integrator) CreateInstance(instance interface{}) error {
 	return i.DB.Create(instance).Error
 }
 
-func (i *Integrator) UpdateInstance(instance interface{}) error {
-	return i.DB.Save(instance).Error
+func (i *Integrator) UpdateInstance(instance interface{}, primaryKey interface{}) error {
+	modelType := reflect.TypeOf(instance).Elem()
+
+	stmt := &gorm.Statement{DB: i.DB}
+	if err := stmt.Parse(instance); err != nil {
+		return fmt.Errorf("failed to parse model: %v", err)
+	}
+
+	primaryField := stmt.Schema.PrioritizedPrimaryField
+	if primaryField == nil {
+		return fmt.Errorf("no primary field found for model %s", modelType.Name())
+	}
+
+	primaryKeyDBName := primaryField.DBName
+
+	return i.DB.Model(instance).Where(fmt.Sprintf("%s = ?", primaryKeyDBName), primaryKey).Save(instance).Error
 }
 
 func (i *Integrator) CreateInstanceOnlyFields(instance interface{}, fields []string) error {
@@ -172,13 +186,37 @@ func (i *Integrator) CreateInstanceOnlyFields(instance interface{}, fields []str
 		return i.DB.Create(instance).Error
 	}
 
-	return i.DB.Model(instance).Select(fields).Create(instance).Error
+	return i.DB.Select(fields).Create(instance).Error
 }
 
-func (i *Integrator) UpdateInstanceOnlyFields(instance interface{}, fields []string) error {
-	if len(fields) == 0 {
-		return i.DB.Save(instance).Error
+func (i *Integrator) UpdateInstanceOnlyFields(instance interface{}, fields []string, primaryKey interface{}) error {
+	modelType := reflect.TypeOf(instance).Elem()
+	modelValue := reflect.ValueOf(instance).Elem()
+
+	stmt := &gorm.Statement{DB: i.DB}
+	if err := stmt.Parse(instance); err != nil {
+		return fmt.Errorf("failed to parse model: %v", err)
 	}
 
-	return i.DB.Model(instance).Select(fields).Save(instance).Error
+	primaryField := stmt.Schema.PrioritizedPrimaryField
+	if primaryField == nil {
+		return fmt.Errorf("no primary field found for model %s", modelType.Name())
+	}
+
+	primaryKeyDBName := primaryField.DBName
+
+	if len(fields) == 0 {
+		return i.DB.Model(instance).Where(fmt.Sprintf("%s = ?", primaryKeyDBName), primaryKey).Save(instance).Error
+	}
+
+	updateData := make(map[string]interface{})
+	for _, fieldName := range fields {
+		fieldValue := modelValue.FieldByName(fieldName)
+		if !fieldValue.IsValid() {
+			return fmt.Errorf("field %s not found in model", fieldName)
+		}
+		updateData[fieldName] = fieldValue.Interface()
+	}
+
+	return i.DB.Model(instance).Where(fmt.Sprintf("%s = ?", primaryKeyDBName), primaryKey).Select(fields).Updates(updateData).Error
 }
