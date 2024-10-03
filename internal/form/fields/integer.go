@@ -1,4 +1,4 @@
-kage fields
+package fields
 
 import (
 	"fmt"
