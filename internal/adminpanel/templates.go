@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"embed"
 	"fmt"
+	"github.com/go-advanced-admin/admin/internal/form"
 	"github.com/go-advanced-admin/admin/internal/utils"
 	"html/template"
 )
@@ -267,6 +268,27 @@ func (tr *DefaultTemplateRenderer) templateFuncs() template.FuncMap {
 		},
 		"safeHTML": func(html string) template.HTML {
 			return template.HTML(html)
+		},
+		"formAsP": func(formInstance form.Form, formErrs []error, fieldsErrs map[string][]error) (template.HTML, error) {
+			html, err := form.RenderFormAsP(formInstance, formErrs, fieldsErrs)
+			if err != nil {
+				return "", err
+			}
+			return template.HTML(html), nil
+		},
+		"formAsUL": func(formInstance form.Form, formErrs []error, fieldsErrs map[string][]error) (template.HTML, error) {
+			html, err := form.RenderFormAsUL(formInstance, formErrs, fieldsErrs)
+			if err != nil {
+				return "", err
+			}
+			return template.HTML(html), nil
+		},
+		"formAsTable": func(formInstance form.Form, formErrs []error, fieldsErrs map[string][]error) (template.HTML, error) {
+			html, err := form.RenderFormAsTable(formInstance, formErrs, fieldsErrs)
+			if err != nil {
+				return "", err
+			}
+			return template.HTML(html), nil
 		},
 	}
 }
