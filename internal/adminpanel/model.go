@@ -16,6 +16,7 @@ type FieldConfig struct {
 	IncludeInSearch       bool
 	IncludeInInstanceView bool
 	IncludeInAddForm      bool
+	IncludeInEditForm     bool
 }
 
 type Model struct {
