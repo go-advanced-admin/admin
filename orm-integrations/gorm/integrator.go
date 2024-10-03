@@ -162,3 +162,23 @@ func (i *Integrator) FetchInstanceOnlyFields(model interface{}, id interface{}, 
 func (i *Integrator) CreateInstance(instance interface{}) error {
 	return i.DB.Create(instance).Error
 }
+
+func (i *Integrator) UpdateInstance(instance interface{}) error {
+	return i.DB.Save(instance).Error
+}
+
+func (i *Integrator) CreateInstanceOnlyFields(instance interface{}, fields []string) error {
+	if len(fields) == 0 {
+		return i.DB.Create(instance).Error
+	}
+
+	return i.DB.Model(instance).Select(fields).Create(instance).Error
+}
+
+func (i *Integrator) UpdateInstanceOnlyFields(instance interface{}, fields []string) error {
+	if len(fields) == 0 {
+		return i.DB.Save(instance).Error
+	}
+
+	return i.DB.Model(instance).Select(fields).Save(instance).Error
+}
