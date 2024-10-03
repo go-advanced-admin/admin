@@ -103,7 +103,7 @@ func (m *Model) GetInstanceViewHandler() HandlerFunc {
 			return GetErrorHTML(http.StatusInternalServerError, err)
 		}
 
-		html, err := m.App.Panel.Config.Renderer.RenderTemplate("instance.html", map[string]interface{}{
+		html, err := m.App.Panel.Config.Renderer.RenderTemplate("instance", map[string]interface{}{
 			"model":    m,
 			"apps":     apps,
 			"instance": instanceData,
@@ -297,7 +297,7 @@ func (m *Model) GetAddHandler() HandlerFunc {
 				return GetErrorHTML(http.StatusInternalServerError, err)
 			}
 
-			html, err := m.App.Panel.Config.Renderer.RenderTemplate("new_instance.html", map[string]interface{}{
+			html, err := m.App.Panel.Config.Renderer.RenderTemplate("new_instance", map[string]interface{}{
 				"apps":      apps,
 				"form":      formInstance,
 				"model":     m,
@@ -344,7 +344,7 @@ func (m *Model) GetAddHandler() HandlerFunc {
 					return GetErrorHTML(http.StatusInternalServerError, err)
 				}
 
-				html, err := m.App.Panel.Config.Renderer.RenderTemplate("new_instance.html", map[string]interface{}{
+				html, err := m.App.Panel.Config.Renderer.RenderTemplate("new_instance", map[string]interface{}{
 					"apps":      apps,
 					"form":      formInstance,
 					"model":     m,
@@ -436,7 +436,7 @@ func (m *Model) GetEditHandler() HandlerFunc {
 				return GetErrorHTML(http.StatusInternalServerError, err)
 			}
 
-			html, err := m.App.Panel.Config.Renderer.RenderTemplate("edit_instance.html", map[string]interface{}{
+			html, err := m.App.Panel.Config.Renderer.RenderTemplate("edit_instance", map[string]interface{}{
 				"apps":      apps,
 				"form":      formInstance,
 				"model":     m,
@@ -483,7 +483,7 @@ func (m *Model) GetEditHandler() HandlerFunc {
 					return GetErrorHTML(http.StatusInternalServerError, err)
 				}
 
-				html, err := m.App.Panel.Config.Renderer.RenderTemplate("edit_instance.html", map[string]interface{}{
+				html, err := m.App.Panel.Config.Renderer.RenderTemplate("edit_instance", map[string]interface{}{
 					"apps":      apps,
 					"form":      formInstance,
 					"model":     m,

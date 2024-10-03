@@ -7,7 +7,6 @@ import (
 	"github.com/go-advanced-admin/admin/internal/form"
 	"github.com/go-advanced-admin/admin/internal/utils"
 	"html/template"
-	"strings"
 )
 
 type TemplateRenderer interface {
@@ -49,8 +48,6 @@ func NewDefaultTemplateRenderer() *DefaultTemplateRenderer {
 }
 
 func (tr *DefaultTemplateRenderer) RenderTemplate(name string, data map[string]interface{}) (string, error) {
-	name = strings.Replace(name, ".html", "", -1)
-
 	newDataMap := make(map[string]interface{})
 	for key, value := range tr.defaultData {
 		newDataMap[key] = value

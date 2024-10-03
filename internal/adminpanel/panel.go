@@ -47,7 +47,10 @@ func NewAdminPanel(orm ORMIntegrator, web WebIntegrator, permissionsCheck Permis
 	pages := []string{"root", "app", "model", "instance", "edit_instance", "new_instance", "page"}
 
 	for _, page := range pages {
-		admin.Config.Renderer.RegisterCompositeDefaultTemplate(page, append([]string{page + ".html"}, components...)...)
+		err := admin.Config.Renderer.RegisterCompositeDefaultTemplate(page, append([]string{page + ".html"}, components...)...)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	web.ServeAssets(config.AssetsPrefix, config.Renderer)
@@ -71,7 +74,7 @@ func (ap *AdminPanel) GetHandler() HandlerFunc {
 			return GetErrorHTML(http.StatusInternalServerError, err)
 		}
 
-		html, err := ap.Config.Renderer.RenderTemplate("root.html", map[string]interface{}{"admin": ap, "apps": apps})
+		html, err := ap.Config.Renderer.RenderTemplate("root", map[string]interface{}{"admin": ap, "apps": apps})
 		if err != nil {
 			return GetErrorHTML(http.StatusInternalServerError, err)
 		}
