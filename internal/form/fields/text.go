@@ -71,6 +71,9 @@ func (f *TextField) HTML() (string, error) {
 }
 
 func (f *TextField) GoTypeToHTMLType(value interface{}) (form.HTMLType, error) {
+	if value == nil {
+		return "", nil
+	}
 	strValue, ok := value.(string)
 	if !ok {
 		return "", errors.New("value must be a string")
@@ -79,6 +82,9 @@ func (f *TextField) GoTypeToHTMLType(value interface{}) (form.HTMLType, error) {
 }
 
 func (f *TextField) HTMLTypeToGoType(value form.HTMLType) (interface{}, error) {
+	if value == "" {
+		return nil, nil
+	}
 	return string(value), nil
 }
 
