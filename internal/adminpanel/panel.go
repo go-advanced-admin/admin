@@ -43,6 +43,13 @@ func NewAdminPanel(orm ORMIntegrator, web WebIntegrator, permissionsCheck Permis
 	admin.Config.Renderer.RegisterLinkFunc(admin.Config.GetLink)
 	admin.Config.Renderer.RegisterAssetsFunc(admin.Config.GetAssetLink)
 
+	components := []string{"page.html"}
+	pages := []string{"root", "app", "model", "instance", "edit_instance", "new_instance", "page"}
+
+	for _, page := range pages {
+		admin.Config.Renderer.RegisterCompositeDefaultTemplate(page, append([]string{page + ".html"}, components...)...)
+	}
+
 	web.ServeAssets(config.AssetsPrefix, config.Renderer)
 	web.HandleRoute("GET", config.GetPrefix(), admin.GetHandler())
 
