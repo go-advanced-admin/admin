@@ -23,7 +23,7 @@
             {{ end }}
         </ul>
         <h2>Edit {{ .model.DisplayName }}</h2>
-        <form method="post" action="{{ .model.GetFullAddLink }}">
+        <form method="post" action="{{ .model.GetFullLink }}/{{ .form.InstanceID }}/edit">
             {{ formAsP .form .formErrs .fieldErrs }}
             <button type="submit">Submit</button>
         </form>

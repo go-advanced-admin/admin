@@ -13,7 +13,7 @@ import (
 )
 
 type TestModel1 struct {
-	ID   uint `gorm:"primarykey"`
+	ID   uint `gorm:"primarykey" admin:"editForm:exclude"`
 	Name string
 }
 
