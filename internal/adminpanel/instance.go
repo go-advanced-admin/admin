@@ -3,7 +3,6 @@ package adminpanel
 import (
 	"fmt"
 	"github.com/go-advanced-admin/admin/internal/form"
-	"github.com/go-advanced-admin/admin/internal/form/fields"
 	"github.com/go-advanced-admin/admin/internal/form/forms"
 	"github.com/go-advanced-admin/admin/internal/utils"
 	"net/http"
@@ -150,7 +149,7 @@ func (f *ModelAddForm) Save(values map[string]form.HTMLType) (interface{}, error
 
 	fieldsToInclude := make([]string, 0)
 	for _, field := range f.Model.Fields {
-		if field.IncludeInAddForm {
+		if field.AddFormField != nil {
 			fieldsToInclude = append(fieldsToInclude, field.Name)
 		}
 	}
@@ -199,7 +198,7 @@ func (f *ModelEditForm) Save(values map[string]form.HTMLType) (interface{}, erro
 
 	fieldsToInclude := make([]string, 0)
 	for _, field := range f.Model.Fields {
-		if field.IncludeInEditForm {
+		if field.EditFormField != nil {
 			fieldsToInclude = append(fieldsToInclude, field.Name)
 		}
 	}
@@ -218,24 +217,11 @@ func (m *Model) NewAddForm() (form.Form, error) {
 	}
 
 	for _, fieldConfig := range m.Fields {
-		if !fieldConfig.IncludeInAddForm {
+		if fieldConfig.AddFormField == nil {
 			continue
 		}
 
-		var formField form.Field
-		switch fieldConfig.FieldType.Kind() {
-		case reflect.String:
-			formField = &fields.TextField{}
-		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-			formField = &fields.IntegerField{}
-		case reflect.Float32, reflect.Float64:
-			formField = &fields.FloatField{}
-		case reflect.Bool:
-			formField = &fields.BooleanField{}
-		default:
-			continue
-		}
-		err := f.AddField(fieldConfig.Name, formField)
+		err := f.AddField(fieldConfig.Name, fieldConfig.AddFormField)
 		if err != nil {
 			return nil, err
 		}
@@ -250,24 +236,11 @@ func (m *Model) NewEditForm(instanceID interface{}) (form.Form, error) {
 	}
 
 	for _, fieldConfig := range m.Fields {
-		if !fieldConfig.IncludeInEditForm {
+		if fieldConfig.EditFormField == nil {
 			continue
 		}
 
-		var formField form.Field
-		switch fieldConfig.FieldType.Kind() {
-		case reflect.String:
-			formField = &fields.TextField{}
-		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-			formField = &fields.IntegerField{}
-		case reflect.Float32, reflect.Float64:
-			formField = &fields.FloatField{}
-		case reflect.Bool:
-			formField = &fields.BooleanField{}
-		default:
-			continue
-		}
-		err := f.AddField(fieldConfig.Name, formField)
+		err := f.AddField(fieldConfig.Name, fieldConfig.EditFormField)
 		if err != nil {
 			return nil, err
 		}
@@ -418,7 +391,7 @@ func (m *Model) GetEditHandler() HandlerFunc {
 
 		initialValuesMap := make(map[string]interface{})
 		for _, field := range m.Fields {
-			if !field.IncludeInEditForm {
+			if field.EditFormField == nil {
 				continue
 			}
 			initialValuesMap[field.Name] = reflect.ValueOf(instanceData).Elem().FieldByName(field.Name).Interface()
