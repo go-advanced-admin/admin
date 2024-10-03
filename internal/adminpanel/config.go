@@ -9,12 +9,16 @@ type AdminConfig struct {
 	DefaultInstancesPerPage uint
 }
 
-var DefaultAdminConfig = AdminConfig{
-	Name:                    "Site Administration",
-	Prefix:                  "admin",
-	AssetsPrefix:            "admin-assets",
-	Renderer:                NewDefaultTemplateRenderer(),
-	DefaultInstancesPerPage: 10,
+var DefaultAdminConfig = NewDefaultAdminConfig()
+
+func NewDefaultAdminConfig() *AdminConfig {
+	return &AdminConfig{
+		Name:                    "Site Administration",
+		Prefix:                  "admin",
+		AssetsPrefix:            "admin-assets",
+		Renderer:                NewDefaultTemplateRenderer(),
+		DefaultInstancesPerPage: 10,
+	}
 }
 
 func (c *AdminConfig) GetPrefix() string {
