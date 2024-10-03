@@ -193,7 +193,7 @@ func TestDefaultTemplateRenderer(t *testing.T) {
 		renderer.RegisterDefaultTemplates(internal.TemplateFiles, "templates/")
 		renderer.RegisterDefaultAssets(internal.AssetsFiles, "assets/")
 
-		html, err := renderer.RenderTemplate("root.html", map[string]interface{}{})
+		html, err := renderer.RenderTemplate("root_back.html", map[string]interface{}{})
 		if err != nil && !errors.Is(err, bytes.ErrTooLarge) {
 			t.Fatalf("expected no error (or file specific), got %v", err)
 		}
