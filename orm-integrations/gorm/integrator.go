@@ -240,6 +240,10 @@ func (i *Integrator) UpdateInstanceOnlyFields(instance interface{}, fields []str
 		}
 		updateData[fieldName] = fieldValue.Interface()
 	}
+	if _, exists := updateData[primaryField.Name]; !exists {
+		updateData[primaryField.Name] = primaryKey
+		fields = append(fields, primaryField.Name)
+	}
 
 	return i.DB.Model(instance).Where(fmt.Sprintf("%s = ?", primaryKeyDBName), primaryKey).Select(fields).Updates(updateData).Error
 }
