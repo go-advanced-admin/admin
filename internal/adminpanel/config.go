@@ -7,6 +7,7 @@ type AdminConfig struct {
 	AssetsPrefix            string
 	GroupPrefix             string
 	DefaultInstancesPerPage uint
+	NavBarGenerators        []NavBarGenerator
 }
 
 var DefaultAdminConfig = NewDefaultAdminConfig()
@@ -18,6 +19,7 @@ func NewDefaultAdminConfig() *AdminConfig {
 		AssetsPrefix:            "admin-assets",
 		Renderer:                NewDefaultTemplateRenderer(),
 		DefaultInstancesPerPage: 10,
+		NavBarGenerators:        []NavBarGenerator{func(interface{}) NavBarItem { return NavBarItem{Name: "View Site", Link: "/"} }},
 	}
 }
 
@@ -41,4 +43,16 @@ func (c *AdminConfig) GetLink(link string) string {
 
 func (c *AdminConfig) GetAssetLink(fileName string) string {
 	return c.GroupPrefix + c.GetAssetsPrefix() + "/" + fileName
+}
+
+func (c *AdminConfig) GetNavBarItems(ctx interface{}) []NavBarItem {
+	items := make([]NavBarItem, 0)
+	for _, generator := range c.NavBarGenerators {
+		item := generator(ctx)
+		html := item.HTML()
+		if html != "" {
+			items = append(items, item)
+		}
+	}
+	return items
 }

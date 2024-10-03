@@ -74,7 +74,7 @@ func (ap *AdminPanel) GetHandler() HandlerFunc {
 			return GetErrorHTML(http.StatusInternalServerError, err)
 		}
 
-		html, err := ap.Config.Renderer.RenderTemplate("root", map[string]interface{}{"admin": ap, "apps": apps})
+		html, err := ap.Config.Renderer.RenderTemplate("root", map[string]interface{}{"admin": ap, "apps": apps, "navBarItems": ap.Config.GetNavBarItems(data)})
 		if err != nil {
 			return GetErrorHTML(http.StatusInternalServerError, err)
 		}
