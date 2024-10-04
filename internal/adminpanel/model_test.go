@@ -79,12 +79,12 @@ func TestModel_GetViewHandler(t *testing.T) {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	testApp, err := panel.RegisterApp("TestApp", "Test App")
+	testApp, err := panel.RegisterApp("TestApp", "Test App", nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	model, err := testApp.RegisterModel(&TestModel{})
+	model, err := testApp.RegisterModel(&TestModel{}, nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

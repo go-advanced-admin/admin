@@ -54,7 +54,7 @@ func (m *Model) GetInstanceDeleteHandler() HandlerFunc {
 			return GetErrorHTML(http.StatusForbidden, fmt.Errorf("you are not allowed to delete this instance"))
 		}
 
-		err = m.App.Panel.ORM.DeleteInstance(m.PTR, instanceIDInterface)
+		err = m.GetORM().DeleteInstance(m.PTR, instanceIDInterface)
 		if err != nil {
 			return GetErrorHTML(http.StatusInternalServerError, err)
 		}
@@ -97,7 +97,7 @@ func (m *Model) GetInstanceViewHandler() HandlerFunc {
 			}
 		}
 
-		instanceData, err := m.App.Panel.ORM.FetchInstanceOnlyFields(m.PTR, instanceIDInterface, fieldsToFetch)
+		instanceData, err := m.GetORM().FetchInstanceOnlyFields(m.PTR, instanceIDInterface, fieldsToFetch)
 		if err != nil {
 			return GetErrorHTML(http.StatusInternalServerError, err)
 		}
@@ -154,7 +154,7 @@ func (f *ModelAddForm) Save(values map[string]form.HTMLType) (interface{}, error
 		}
 	}
 
-	err = f.Model.App.Panel.ORM.CreateInstanceOnlyFields(instancePtr.Interface(), fieldsToInclude)
+	err = f.Model.GetORM().CreateInstanceOnlyFields(instancePtr.Interface(), fieldsToInclude)
 	if err != nil {
 		return nil, err
 	}
@@ -203,7 +203,7 @@ func (f *ModelEditForm) Save(values map[string]form.HTMLType) (interface{}, erro
 		}
 	}
 
-	err = f.Model.App.Panel.ORM.UpdateInstanceOnlyFields(instancePtr.Interface(), fieldsToInclude, f.InstanceID)
+	err = f.Model.GetORM().UpdateInstanceOnlyFields(instancePtr.Interface(), fieldsToInclude, f.InstanceID)
 	if err != nil {
 		return nil, err
 	}
@@ -318,11 +318,12 @@ func (m *Model) GetAddHandler() HandlerFunc {
 				}
 
 				html, err := m.App.Panel.Config.Renderer.RenderTemplate("new_instance", map[string]interface{}{
-					"apps": apps, "navBarItems": m.App.Panel.Config.GetNavBarItems(data),
-					"form":      formInstance,
-					"model":     m,
-					"formErrs":  formErrs,
-					"fieldErrs": fieldErrs,
+					"apps":        apps,
+					"navBarItems": m.App.Panel.Config.GetNavBarItems(data),
+					"form":        formInstance,
+					"model":       m,
+					"formErrs":    formErrs,
+					"fieldErrs":   fieldErrs,
 				})
 				if err != nil {
 					return GetErrorHTML(http.StatusInternalServerError, err)

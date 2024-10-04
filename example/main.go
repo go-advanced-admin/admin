@@ -63,31 +63,31 @@ func main() {
 		log.Fatal(err)
 	}
 
-	testApp1, err := panel.RegisterApp("TestApp1", "Test App 1")
+	testApp1, err := panel.RegisterApp("TestApp1", "Test App 1", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	_, err = testApp1.RegisterModel(&TestModel1{})
+	_, err = testApp1.RegisterModel(&TestModel1{}, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
-	_, err = testApp1.RegisterModel(&TestModel2{})
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	testApp2, err := panel.RegisterApp("TestApp2", "Test App 2")
+	_, err = testApp1.RegisterModel(&TestModel2{}, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	_, err = testApp2.RegisterModel(&TestModel3{})
+	testApp2, err := panel.RegisterApp("TestApp2", "Test App 2", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	_, err = testApp2.RegisterModel(&TestModel4{})
+	_, err = testApp2.RegisterModel(&TestModel3{}, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = testApp2.RegisterModel(&TestModel4{}, nil)
 	if err != nil {
 		log.Fatal(err)
 	}

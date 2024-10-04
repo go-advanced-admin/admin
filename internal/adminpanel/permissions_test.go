@@ -167,13 +167,13 @@ func TestPermissionsRetrieval(t *testing.T) {
 		t.Fatalf("failed to create mock admin panel: %v", err)
 	}
 
-	app, err := adminPanel.RegisterApp("TestApp", "Test App")
+	app, err := adminPanel.RegisterApp("TestApp", "Test App", nil)
 	if err != nil {
 		t.Fatalf("failed to register app: %v", err)
 	}
 
 	model := &TestModel1{}
-	_, err = app.RegisterModel(model)
+	_, err = app.RegisterModel(model, nil)
 	if err != nil {
 		t.Fatalf("failed to register model: %v", err)
 	}

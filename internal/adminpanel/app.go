@@ -16,9 +16,17 @@ type App struct {
 	Models      map[string]*Model
 	ModelsSlice []*Model
 	Panel       *AdminPanel
+	ORM         ORMIntegrator
 }
 
-func (a *App) RegisterModel(model interface{}) (*Model, error) {
+func (a *App) GetORM() ORMIntegrator {
+	if a.ORM != nil {
+		return a.ORM
+	}
+	return a.Panel.GetORM()
+}
+
+func (a *App) RegisterModel(model interface{}, orm ORMIntegrator) (*Model, error) {
 	modelType := reflect.TypeOf(model)
 
 	if modelType.Kind() != reflect.Ptr {
@@ -366,6 +374,7 @@ func (a *App) RegisterModel(model interface{}) (*Model, error) {
 		Fields:           fieldConfigs,
 		PrimaryKeyGetter: primaryKeyGetter,
 		PrimaryKeyType:   primaryKeyType,
+		ORM:              orm,
 	}
 	a.Panel.Web.HandleRoute("GET", a.Panel.Config.GetPrefix()+modelInstance.GetLink(), modelInstance.GetViewHandler())
 	a.Panel.Web.HandleRoute("GET", a.Panel.Config.GetPrefix()+modelInstance.GetLink()+"/:id/view", modelInstance.GetInstanceViewHandler())
