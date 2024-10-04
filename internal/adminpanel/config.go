@@ -13,13 +13,20 @@ type AdminConfig struct {
 var DefaultAdminConfig = NewDefaultAdminConfig()
 
 func NewDefaultAdminConfig() *AdminConfig {
+	navBarGens := []NavBarGenerator{
+		func(interface{}) NavBarItem { return NavBarItem{Name: "Welcome, User. ", Bold: true} },
+		func(interface{}) NavBarItem { return NavBarItem{Name: "View Site", Link: "/"} },
+		func(interface{}) NavBarItem { return NavBarItem{Name: "View Site", Link: "/"} },
+		func(interface{}) NavBarItem { return NavBarItem{Name: "View Site", Link: "/"} },
+	}
+
 	return &AdminConfig{
 		Name:                    "Site Administration",
 		Prefix:                  "admin",
 		AssetsPrefix:            "admin-assets",
 		Renderer:                NewDefaultTemplateRenderer(),
 		DefaultInstancesPerPage: 10,
-		NavBarGenerators:        []NavBarGenerator{func(interface{}) NavBarItem { return NavBarItem{Name: "View Site", Link: "/"} }},
+		NavBarGenerators:        navBarGens,
 	}
 }
 
@@ -47,8 +54,13 @@ func (c *AdminConfig) GetAssetLink(fileName string) string {
 
 func (c *AdminConfig) GetNavBarItems(ctx interface{}) []NavBarItem {
 	items := make([]NavBarItem, 0)
-	for _, generator := range c.NavBarGenerators {
+	for idx, generator := range c.NavBarGenerators {
 		item := generator(ctx)
+
+		if idx != len(c.NavBarGenerators)-1 && !item.Bold {
+			item.NavBarAppendSlash = true
+		}
+
 		html := item.HTML()
 		if html != "" {
 			items = append(items, item)

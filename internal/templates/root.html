@@ -15,16 +15,15 @@
                 <h1 class="font-semibold text-xl">Go Advanced Admin</h1>
             </div>
 
-            <div class="navbar-end text-sm whitespace-pre">
-{{/*                TODO make this look good*/}}
-                {{- $first := true }}
-                {{- range .navBarItems -}}
-                    {{- if not $first -}}
-                        <a> / </a>
-                    {{- end -}}
+            <div class="navbar-end text-sm">
+                {{ range .navBarItems -}}
+                <div>
                     {{- safeHTML .HTML -}}
-                    {{- $first = false -}}
+                </div>
+                {{- if .NavBarAppendSlash -}}
+                <a class="whitespace-pre"> / </a>
                 {{- end -}}
+                {{- end }}
 
                 <!-- theme swap -->
                 <label class="swap swap-rotate pl-2">
