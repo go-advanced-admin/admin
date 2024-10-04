@@ -58,6 +58,17 @@
 
 
             </div>
+
+            {{ if .logs }}
+            <div>
+                <h2>Logs</h2>
+                <ul>
+                    {{ range .logs }}
+                    <li>{{ .Repr }}: {{ .ContentType }}</li>
+                    {{ end }}
+                </ul>
+            </div>
+            {{ end }}
         </div>
 
         {{ template "drawerSide" . }}

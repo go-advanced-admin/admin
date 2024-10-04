@@ -1,9 +1,11 @@
 package adminpanel
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/go-advanced-admin/admin/internal/form"
 	"github.com/go-advanced-admin/admin/internal/form/forms"
+	"github.com/go-advanced-admin/admin/internal/logging"
 	"github.com/go-advanced-admin/admin/internal/utils"
 	"net/http"
 	"reflect"
@@ -14,6 +16,41 @@ type Instance struct {
 	Data        interface{}
 	Model       *Model
 	Permissions Permissions
+}
+
+type AdminInstanceReprInterface interface {
+	AdminInstanceRepr() string
+}
+
+func (i *Instance) GetRepr() string {
+	if repr, ok := i.Data.(AdminInstanceReprInterface); ok {
+		return repr.AdminInstanceRepr()
+	}
+	return fmt.Sprint(i.Data)
+}
+
+func (i *Instance) CreateViewLog(ctx interface{}) error {
+	return i.Model.App.Panel.Config.CreateLog(ctx, logging.LogStoreLevelInstanceView, fmt.Sprintf("%s | %s", i.Model.App.Name, i.Model.DisplayName), i.InstanceID, i.GetRepr(), "")
+}
+
+func (i *Instance) CreateUpdateLog(ctx interface{}, updates map[string]interface{}) error {
+	message, err := json.Marshal(updates)
+	if err != nil {
+		return err
+	}
+	return i.Model.App.Panel.Config.CreateLog(ctx, logging.LogStoreLevelUpdate, fmt.Sprintf("%s | %s", i.Model.App.Name, i.Model.DisplayName), i.InstanceID, i.GetRepr(), string(message))
+}
+
+func (i *Instance) CreateCreateLog(ctx interface{}) error {
+	message, err := json.Marshal(i.Data)
+	if err != nil {
+		return err
+	}
+	return i.Model.App.Panel.Config.CreateLog(ctx, logging.LogStoreLevelCreate, fmt.Sprintf("%s | %s", i.Model.App.Name, i.Model.DisplayName), i.InstanceID, i.GetRepr(), string(message))
+}
+
+func (i *Instance) CreateDeleteLog(ctx interface{}) error {
+	return i.Model.App.Panel.Config.CreateLog(ctx, logging.LogStoreLevelDelete, fmt.Sprintf("%s | %s", i.Model.App.Name, i.Model.DisplayName), i.InstanceID, i.GetRepr(), "")
 }
 
 func (i *Instance) GetLink() string {
@@ -55,6 +92,16 @@ func (m *Model) GetInstanceDeleteHandler() HandlerFunc {
 		}
 
 		err = m.GetORM().DeleteInstance(m.PTR, instanceIDInterface)
+		if err != nil {
+			return GetErrorHTML(http.StatusInternalServerError, err)
+		}
+
+		instance := &Instance{
+			InstanceID: instanceIDInterface,
+			Model:      m,
+		}
+
+		err = instance.CreateDeleteLog(data)
 		if err != nil {
 			return GetErrorHTML(http.StatusInternalServerError, err)
 		}
@@ -103,13 +150,24 @@ func (m *Model) GetInstanceViewHandler() HandlerFunc {
 		}
 
 		html, err := m.App.Panel.Config.Renderer.RenderTemplate("instance", map[string]interface{}{
-			"model": m,
-			"apps":  apps, "navBarItems": m.App.Panel.Config.GetNavBarItems(data),
-			"instance": instanceData,
+			"model":       m,
+			"apps":        apps,
+			"navBarItems": m.App.Panel.Config.GetNavBarItems(data),
+			"instance":    instanceData,
 		})
 		if err != nil {
 			return GetErrorHTML(http.StatusInternalServerError, err)
 		}
+
+		instance := &Instance{
+			InstanceID: instanceIDInterface,
+			Model:      m,
+		}
+		err = instance.CreateViewLog(data)
+		if err != nil {
+			return GetErrorHTML(http.StatusInternalServerError, err)
+		}
+
 		return http.StatusOK, html
 	}
 }
@@ -271,11 +329,12 @@ func (m *Model) GetAddHandler() HandlerFunc {
 			}
 
 			html, err := m.App.Panel.Config.Renderer.RenderTemplate("new_instance", map[string]interface{}{
-				"apps": apps, "navBarItems": m.App.Panel.Config.GetNavBarItems(data),
-				"form":      formInstance,
-				"model":     m,
-				"formErrs":  make([]error, 0),
-				"fieldErrs": make(map[string][]error),
+				"apps":        apps,
+				"navBarItems": m.App.Panel.Config.GetNavBarItems(data),
+				"form":        formInstance,
+				"model":       m,
+				"formErrs":    make([]error, 0),
+				"fieldErrs":   make(map[string][]error),
 			})
 			if err != nil {
 				return GetErrorHTML(http.StatusInternalServerError, err)
@@ -343,6 +402,17 @@ func (m *Model) GetAddHandler() HandlerFunc {
 			}
 
 			instanceLink := fmt.Sprintf("%s/%v/view", m.GetFullLink(), instanceID)
+
+			instanceInstance := &Instance{
+				InstanceID: instanceID,
+				Data:       instance,
+				Model:      m,
+			}
+
+			err = instanceInstance.CreateCreateLog(data)
+			if err != nil {
+				return GetErrorHTML(http.StatusInternalServerError, err)
+			}
 
 			return http.StatusFound, instanceLink
 		} else {
@@ -482,6 +552,17 @@ func (m *Model) GetEditHandler() HandlerFunc {
 			}
 
 			instanceLink := fmt.Sprintf("%s/%v/view", m.GetFullLink(), instanceID)
+
+			instanceInstance := &Instance{
+				InstanceID: instanceID,
+				Data:       instance,
+				Model:      m,
+			}
+
+			err = instanceInstance.CreateUpdateLog(data, cleanFormData)
+			if err != nil {
+				return GetErrorHTML(http.StatusInternalServerError, err)
+			}
 
 			return http.StatusFound, instanceLink
 		} else {
