@@ -1,10 +1,9 @@
-package tests
+package fields
 
 import (
 	"errors"
 	"fmt"
 	"github.com/go-advanced-admin/admin/internal/form"
-	"github.com/go-advanced-admin/admin/internal/form/fields"
 	"github.com/go-advanced-admin/admin/internal/form/forms"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -18,8 +17,8 @@ func dummyValidationFunc(values map[string]interface{}) ([]error, error) {
 }
 
 func TestValuesAreValid(t *testing.T) {
-	textField1 := &fields.TextField{}
-	textField2 := &fields.TextField{}
+	textField1 := &TextField{}
+	textField2 := &TextField{}
 
 	baseForm := &forms.BaseForm{}
 	err := baseForm.AddField("name", textField1)
@@ -43,8 +42,8 @@ func TestValuesAreValid(t *testing.T) {
 }
 
 func TestGetCleanData(t *testing.T) {
-	textField1 := &fields.TextField{}
-	textField2 := &fields.TextField{}
+	textField1 := &TextField{}
+	textField2 := &TextField{}
 
 	baseForm := &forms.BaseForm{}
 	err := baseForm.AddField("name", textField1)

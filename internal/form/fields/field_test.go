@@ -1,9 +1,8 @@
-package tests
+package fields
 
 import (
 	"errors"
 	"github.com/go-advanced-admin/admin/internal/form"
-	"github.com/go-advanced-admin/admin/internal/form/fields"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -17,7 +16,7 @@ func DummyFieldValidationFunc(value interface{}) ([]error, error) {
 }
 
 func TestFieldValueIsValid(t *testing.T) {
-	textField := &fields.TextField{}
+	textField := &TextField{}
 	err := textField.RegisterName("exampleField")
 	assert.Nil(t, err)
 	textField.RegisterValidationFunctions(DummyFieldValidationFunc)

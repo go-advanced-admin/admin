@@ -1,14 +1,13 @@
-package tests
+package fields
 
 import (
 	"github.com/go-advanced-admin/admin/internal/form"
-	"github.com/go-advanced-admin/admin/internal/form/fields"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestTextFieldHTML(t *testing.T) {
-	textField := &fields.TextField{}
+	textField := &TextField{}
 	err := textField.RegisterName("username")
 	assert.Nil(t, err)
 	placeholder := "Enter username"
@@ -26,7 +25,7 @@ func TestTextFieldHTML(t *testing.T) {
 }
 
 func TestTextFieldConversions(t *testing.T) {
-	textField := &fields.TextField{}
+	textField := &TextField{}
 
 	htmlType, err := textField.GoTypeToHTMLType("test")
 	assert.Nil(t, err)
