@@ -1,6 +1,7 @@
 package fields
 
 import (
+	"errors"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -93,4 +94,27 @@ func TestBaseField_SetSupersedingAttribute(t *testing.T) {
 	assert.Equal(t, "value2", *f.SupersedingAttributes["attr1"])
 	assert.Equal(t, &value3, f.SupersedingAttributes["attr3"])
 	assert.Equal(t, "value3", *f.SupersedingAttributes["attr3"])
+}
+
+func TestBaseFieldMethods(t *testing.T) {
+	baseField := &BaseField{}
+	err := baseField.RegisterName("example")
+	assert.Nil(t, err)
+	assert.Equal(t, "example", baseField.GetName())
+
+	err = baseField.RegisterName("")
+	assert.NotNil(t, err)
+
+	baseField.RegisterInitialValue("initial")
+	assert.Equal(t, "initial", baseField.InitialValue)
+
+	validateFunc := func(value interface{}) ([]error, error) {
+		if value == "invalid" {
+			return []error{errors.New("value is invalid")}, nil
+		}
+		return nil, nil
+	}
+
+	baseField.RegisterValidationFunctions(validateFunc)
+	assert.NotNil(t, baseField.GetValidationFunctions())
 }
