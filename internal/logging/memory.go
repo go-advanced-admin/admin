@@ -33,8 +33,6 @@ func (store *InMemoryLogStore) InsertLogEntry(log *LogEntry) error {
 	store.logIDs = append([]string{logID}, store.logIDs...)
 	store.logEntryMap[logID] = log
 
-	println(store.GetLogEntries())
-
 	return nil
 }
 
