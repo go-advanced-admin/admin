@@ -8,7 +8,10 @@ type AdminConfig struct {
 	GroupPrefix             string
 	DefaultInstancesPerPage uint
 	NavBarGenerators        []NavBarGenerator
+	UserIDFetcher           UserIDFetchFunction
 }
+
+type UserIDFetchFunction = func(ctx interface{}) (string, error)
 
 var DefaultAdminConfig = NewDefaultAdminConfig()
 
