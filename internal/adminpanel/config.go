@@ -44,18 +44,6 @@ func NewDefaultAdminConfig() *AdminConfig {
 	}
 }
 
-func (c *AdminConfig) GetLogEntries(maxCount uint) []*logging.LogEntry {
-	if c.LogStore == nil {
-		return []*logging.LogEntry{}
-	}
-	entries, err := c.LogStore.GetLogEntries()
-	if err != nil {
-		return []*logging.LogEntry{}
-	}
-	entries = entries[:min(uint(len(entries)), maxCount)]
-	return entries
-}
-
 func (c *AdminConfig) CreateLog(ctx interface{}, action logging.LogStoreLevel, contentType string, objectID interface{}, objectRepr string, message string) error {
 	if !c.LogStoreLevel.AssessLevel(action) {
 		return nil

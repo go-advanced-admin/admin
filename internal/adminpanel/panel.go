@@ -17,6 +17,28 @@ type AdminPanel struct {
 	Config            AdminConfig
 }
 
+func (ap *AdminPanel) GetLogEntries(ctx interface{}, maxCount uint) []*logging.LogEntry {
+	if ap.Config.LogStore == nil {
+		return []*logging.LogEntry{}
+	}
+	entries, err := ap.Config.LogStore.GetLogEntries()
+	if err != nil {
+		return []*logging.LogEntry{}
+	}
+	entries = entries[:min(uint(len(entries)), maxCount)]
+	permissibleEntries := make([]*logging.LogEntry, 0)
+	for _, entry := range entries {
+		allowed, err := ap.PermissionChecker.HasLogViewPermission(ctx, entry.ID)
+		if err != nil {
+			continue
+		}
+		if allowed {
+			permissibleEntries = append(permissibleEntries, entry)
+		}
+	}
+	return permissibleEntries
+}
+
 func (ap *AdminPanel) CreateViewLog(ctx interface{}) error {
 	return ap.Config.CreateLog(ctx, logging.LogStoreLevelPanelView, "", nil, "", "")
 }
@@ -87,7 +109,7 @@ func (ap *AdminPanel) GetHandler() HandlerFunc {
 			"admin":       ap,
 			"apps":        apps,
 			"navBarItems": ap.Config.GetNavBarItems(data),
-			"logs":        ap.Config.GetLogEntries(20),
+			"logs":        ap.GetLogEntries(data, 20),
 		})
 		if err != nil {
 			return GetErrorHTML(http.StatusInternalServerError, err)
