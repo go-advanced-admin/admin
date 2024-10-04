@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Log Entries administration</title>
+        <link rel="stylesheet" href="{{ assetPath "sample.css" }}">
+        <script src="https://unpkg.com/htmx.org@1.9.3"></script>
+    </head>
+    <body>
+        <h2>Models Sidepanel</h2>
+        <ul>
+            {{ range .apps }}
+                <li><a href="{{ .app.GetFullLink }}">{{ .app.DisplayName }}</a>
+                    <ul>
+                        {{ range .models }}
+                            {{ if .permissions.Read }}
+                                <li><a href="{{ .model.GetFullLink }}">{{ .model.DisplayName }}</a>  -- <a href="{{ .model.GetFullLink }}">View</a>{{ if .permissions.Create }}  -- <a href="{{ .model.GetFullAddLink }}">Add</a>{{ end }}</li>
+                            {{ end }}
+                        {{ end }}
+                    </ul>
+                </li>
+            {{ end }}
+        </ul>
+        <h2>Log Details</h2>
+        <ul>
+            <li>ID: {{ .log.ID }}</li>
+            <li>Action Time: {{ .log.ActionTime }}</li>
+            <li>User ID: {{ .log.UserID }}</li>
+            <li>User Repr: {{ .log.UserRepr }}</li>
+            <li>Content Type: {{ .log.ContentType }}</li>
+            <li>Object ID: {{ .log.ObjectID }}</li>
+            <li>Object Repr: {{ .log.ObjectRepr }}</li>
+            <li>Action Flag: {{ .log.ActionFlag }}</li>
+            <li>Message: {{ .log.Message }}</li>
+        </ul>
+    </body>
+</html>

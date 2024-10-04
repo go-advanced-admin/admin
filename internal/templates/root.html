@@ -63,8 +63,9 @@
             <div>
                 <h2>Logs</h2>
                 <ul>
+                    {{ $fullLogBaseLink := .admin.GetFullLogBaseLink}}
                     {{ range .logs }}
-                    <li>{{ .Repr }}: {{ .ContentType }}</li>
+                        <li><a href="{{ $fullLogBaseLink }}/{{ .ID }}">{{ .Repr }}: {{ .ContentType }}</a></li>
                     {{ end }}
                 </ul>
             </div>
