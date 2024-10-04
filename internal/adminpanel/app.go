@@ -421,7 +421,7 @@ func (a *App) GetHandler() HandlerFunc {
 }
 
 func (a *App) GetLink() string {
-	return fmt.Sprintf("/%s", a.Name)
+	return fmt.Sprintf("/a/%s", a.Name)
 }
 
 func (a *App) GetFullLink() string {
