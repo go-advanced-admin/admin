@@ -76,8 +76,15 @@ func (m *Model) GetInstanceDeleteHandler() HandlerFunc {
 			return GetErrorHTML(http.StatusBadRequest, fmt.Errorf("instance id is required"))
 		}
 
-		primaryKeyValue := reflect.New(m.PrimaryKeyType).Elem()
-		if err := utils.SetStringsAsType(primaryKeyValue, instanceIDStr); err != nil {
+		primaryKeyType, err := m.GetPrimaryKeyType()
+		if err != nil {
+			return GetErrorHTML(http.StatusInternalServerError, err)
+		}
+
+		primaryKeyValuePtr := reflect.New(primaryKeyType)
+		primaryKeyValue := primaryKeyValuePtr.Elem()
+
+		if err = utils.SetStringsAsType(primaryKeyValue, instanceIDStr); err != nil {
 			return GetErrorHTML(http.StatusBadRequest, fmt.Errorf("invalid instance id: %v", err))
 		}
 
@@ -106,7 +113,7 @@ func (m *Model) GetInstanceDeleteHandler() HandlerFunc {
 			return GetErrorHTML(http.StatusInternalServerError, err)
 		}
 
-		return http.StatusFound, m.GetLink()
+		return http.StatusSeeOther, m.GetLink()
 	}
 }
 
@@ -117,8 +124,15 @@ func (m *Model) GetInstanceViewHandler() HandlerFunc {
 			return GetErrorHTML(http.StatusBadRequest, fmt.Errorf("instance id is required"))
 		}
 
-		primaryKeyValue := reflect.New(m.PrimaryKeyType).Elem()
-		if err := utils.SetStringsAsType(primaryKeyValue, instanceIDStr); err != nil {
+		primaryKeyType, err := m.GetPrimaryKeyType()
+		if err != nil {
+			return GetErrorHTML(http.StatusInternalServerError, err)
+		}
+
+		primaryKeyValuePtr := reflect.New(primaryKeyType)
+		primaryKeyValue := primaryKeyValuePtr.Elem()
+
+		if err = utils.SetStringsAsType(primaryKeyValue, instanceIDStr); err != nil {
 			return GetErrorHTML(http.StatusBadRequest, fmt.Errorf("invalid instance id: %v", err))
 		}
 
@@ -189,13 +203,24 @@ func (f *ModelAddForm) Save(values map[string]form.HTMLType) (interface{}, error
 
 	for fieldName, value := range cleanValues {
 		fieldVal := instanceVal.FieldByName(fieldName)
+
 		if !fieldVal.IsValid() {
-			continue
+			return nil, fmt.Errorf("field %s not found in model", fieldName)
 		}
+
 		if !fieldVal.CanSet() {
 			return nil, fmt.Errorf("field %s is not settable", fieldName)
 		}
+
+		if value == nil {
+			if fieldVal.Kind() == reflect.Ptr {
+				fieldVal.Set(reflect.Zero(fieldVal.Type()))
+			}
+			continue
+		}
+
 		val := reflect.ValueOf(value)
+
 		if val.Type().AssignableTo(fieldVal.Type()) {
 			fieldVal.Set(val)
 		} else if val.Type().ConvertibleTo(fieldVal.Type()) {
@@ -396,7 +421,10 @@ func (m *Model) GetAddHandler() HandlerFunc {
 			}
 
 			instance := instanceInterface
-			instanceID := m.PrimaryKeyGetter(instance)
+			instanceID, err := m.GetPrimaryKeyValue(instance)
+			if err != nil {
+				return GetErrorHTML(http.StatusInternalServerError, err)
+			}
 			if instanceID == nil {
 				return GetErrorHTML(http.StatusInternalServerError, fmt.Errorf("instance id is nil"))
 			}
@@ -414,7 +442,7 @@ func (m *Model) GetAddHandler() HandlerFunc {
 				return GetErrorHTML(http.StatusInternalServerError, err)
 			}
 
-			return http.StatusFound, instanceLink
+			return http.StatusSeeOther, instanceLink
 		} else {
 			return GetErrorHTML(http.StatusMethodNotAllowed, fmt.Errorf("method not allowed"))
 		}
@@ -428,8 +456,15 @@ func (m *Model) GetEditHandler() HandlerFunc {
 			return GetErrorHTML(http.StatusBadRequest, fmt.Errorf("instance id is required"))
 		}
 
-		primaryKeyValue := reflect.New(m.PrimaryKeyType).Elem()
-		if err := utils.SetStringsAsType(primaryKeyValue, instanceIDStr); err != nil {
+		primaryKeyType, err := m.GetPrimaryKeyType()
+		if err != nil {
+			return GetErrorHTML(http.StatusInternalServerError, err)
+		}
+
+		primaryKeyValuePtr := reflect.New(primaryKeyType)
+		primaryKeyValue := primaryKeyValuePtr.Elem()
+
+		if err = utils.SetStringsAsType(primaryKeyValue, instanceIDStr); err != nil {
 			return GetErrorHTML(http.StatusBadRequest, fmt.Errorf("invalid instance id: %v", err))
 		}
 
@@ -546,7 +581,10 @@ func (m *Model) GetEditHandler() HandlerFunc {
 			}
 
 			instance := instanceInterface
-			instanceID := m.PrimaryKeyGetter(instance)
+			instanceID, err := m.GetPrimaryKeyValue(instance)
+			if err != nil {
+				return GetErrorHTML(http.StatusInternalServerError, err)
+			}
 			if instanceID == nil {
 				return GetErrorHTML(http.StatusInternalServerError, fmt.Errorf("instance id is nil"))
 			}
@@ -564,7 +602,7 @@ func (m *Model) GetEditHandler() HandlerFunc {
 				return GetErrorHTML(http.StatusInternalServerError, err)
 			}
 
-			return http.StatusFound, instanceLink
+			return http.StatusSeeOther, instanceLink
 		} else {
 			return GetErrorHTML(http.StatusMethodNotAllowed, fmt.Errorf("method not allowed"))
 		}

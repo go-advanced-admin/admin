@@ -15,6 +15,73 @@ func NewIntegrator(db *gorm.DB) *Integrator {
 	return &Integrator{DB: db}
 }
 
+func (i *Integrator) GetPrimaryKeyValue(model interface{}) (interface{}, error) {
+	modelValue := reflect.ValueOf(model)
+
+	if modelValue.Kind() == reflect.Ptr {
+		if modelValue.IsNil() {
+			return nil, fmt.Errorf("model pointer is nil")
+		}
+		modelValue = modelValue.Elem()
+	} else if modelValue.Kind() != reflect.Struct {
+		return nil, fmt.Errorf("model is neither a struct nor a pointer to a struct")
+	}
+
+	modelType := modelValue.Type()
+
+	stmt := &gorm.Statement{DB: i.DB}
+	err := stmt.Parse(reflect.New(modelType).Interface())
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse model: %v", err)
+	}
+
+	primaryField := stmt.Schema.PrioritizedPrimaryField
+	if primaryField == nil {
+		return nil, fmt.Errorf("no primary field found for model %s", modelType.Name())
+	}
+
+	primaryKeyValue := modelValue.FieldByName(primaryField.Name)
+	if !primaryKeyValue.IsValid() {
+		return nil, fmt.Errorf("primary key field %s not found in model %s", primaryField.Name, modelType.Name())
+	}
+
+	return primaryKeyValue.Interface(), nil
+}
+
+func (i *Integrator) GetPrimaryKeyType(model interface{}) (reflect.Type, error) {
+	modelValue := reflect.ValueOf(model)
+
+	if modelValue.Kind() == reflect.Ptr {
+		if modelValue.IsNil() {
+			return nil, fmt.Errorf("model pointer is nil")
+		}
+		modelValue = modelValue.Elem()
+	} else if modelValue.Kind() != reflect.Struct {
+		return nil, fmt.Errorf("model is neither a struct nor a pointer to a struct")
+	}
+
+	modelType := modelValue.Type()
+
+	stmt := &gorm.Statement{DB: i.DB}
+	err := stmt.Parse(reflect.New(modelType).Interface())
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse model: %v", err)
+	}
+
+	primaryField := stmt.Schema.PrioritizedPrimaryField
+	if primaryField == nil {
+		return nil, fmt.Errorf("no primary field found for model %s", modelType.Name())
+	}
+
+	primaryKeyField, found := modelType.FieldByName(primaryField.Name)
+
+	if !found {
+		return nil, fmt.Errorf("primary key field %s not found in model %s", primaryField.Name, modelType.Name())
+	}
+
+	return primaryKeyField.Type, nil
+}
+
 func (i *Integrator) FetchInstances(model interface{}) (interface{}, error) {
 	modelType := reflect.TypeOf(model).Elem()
 	sliceType := reflect.SliceOf(modelType)

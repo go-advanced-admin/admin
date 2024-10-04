@@ -1,6 +1,10 @@
 package adminpanel
 
+import "reflect"
+
 type ORMIntegrator interface {
+	GetPrimaryKeyValue(model interface{}) (interface{}, error)
+	GetPrimaryKeyType(model interface{}) (reflect.Type, error)
 	FetchInstances(model interface{}) (interface{}, error)
 	FetchInstancesOnlyFields(model interface{}, fields []string) (interface{}, error)
 	FetchInstancesOnlyFieldWithSearch(model interface{}, fields []string, query string, searchFields []string) (interface{}, error)
