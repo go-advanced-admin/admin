@@ -2,6 +2,7 @@ package adminpanel
 
 import (
 	"fmt"
+	"github.com/go-advanced-admin/admin/internal/logging"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -16,6 +17,10 @@ type Model struct {
 	PrimaryKeyGetter func(interface{}) interface{}
 	PrimaryKeyType   reflect.Type
 	ORM              ORMIntegrator
+}
+
+func (m *Model) CreateViewLog(ctx interface{}) error {
+	return m.App.Panel.Config.CreateLog(ctx, logging.LogStoreLevelListView, fmt.Sprintf("%s | %s", m.App.Name, m.DisplayName), nil, "", "")
 }
 
 func (m *Model) GetORM() ORMIntegrator {
@@ -162,6 +167,10 @@ func (m *Model) GetViewHandler() HandlerFunc {
 			"perPage":     perPage,
 			"navBarItems": m.App.Panel.Config.GetNavBarItems(data),
 		})
+		if err != nil {
+			return GetErrorHTML(http.StatusInternalServerError, err)
+		}
+		err = m.CreateViewLog(data)
 		if err != nil {
 			return GetErrorHTML(http.StatusInternalServerError, err)
 		}

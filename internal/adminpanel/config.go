@@ -1,5 +1,12 @@
 package adminpanel
 
+import (
+	"fmt"
+	"github.com/go-advanced-admin/admin/internal/logging"
+	"github.com/google/uuid"
+	"time"
+)
+
 type AdminConfig struct {
 	Name                    string
 	Prefix                  string
@@ -9,6 +16,8 @@ type AdminConfig struct {
 	DefaultInstancesPerPage uint
 	NavBarGenerators        []NavBarGenerator
 	UserFetcher             UserFetchFunction
+	LogStore                logging.LogStore
+	LogStoreLevel           logging.LogStoreLevel
 }
 
 type UserFetchFunction = func(ctx interface{}) (userID interface{}, repr string, err error)
@@ -29,8 +38,53 @@ func NewDefaultAdminConfig() *AdminConfig {
 		AssetsPrefix:            "admin-assets",
 		Renderer:                NewDefaultTemplateRenderer(),
 		DefaultInstancesPerPage: 10,
+		LogStore:                logging.NewInMemoryLogStore(100),
+		LogStoreLevel:           logging.LogStoreLevelPanelView,
 		NavBarGenerators:        navBarGens,
 	}
+}
+
+func (c *AdminConfig) GetLogEntries(maxCount uint) []*logging.LogEntry {
+	if c.LogStore == nil {
+		return []*logging.LogEntry{}
+	}
+	entries, err := c.LogStore.GetLogEntries()
+	if err != nil {
+		return []*logging.LogEntry{}
+	}
+	entries = entries[:min(uint(len(entries)), maxCount)]
+	return entries
+}
+
+func (c *AdminConfig) CreateLog(ctx interface{}, action logging.LogStoreLevel, contentType string, objectID interface{}, objectRepr string, message string) error {
+	if !c.LogStoreLevel.AssessLevel(action) {
+		return nil
+	}
+
+	var userId interface{}
+	var userRepr string
+	var err error
+	if c.UserFetcher != nil {
+		userId, userRepr, err = c.UserFetcher(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to fetch user: %w", err)
+		}
+	}
+	logEntry := logging.LogEntry{
+		ID:          uuid.New(),
+		ActionTime:  time.Now(),
+		UserID:      userId,
+		UserRepr:    userRepr,
+		ActionFlag:  action,
+		ContentType: contentType,
+		ObjectID:    objectID,
+		ObjectRepr:  objectRepr,
+		Message:     message,
+	}
+
+	err = c.LogStore.InsertLogEntry(&logEntry)
+
+	return nil
 }
 
 func (c *AdminConfig) GetPrefix() string {

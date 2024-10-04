@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/go-advanced-admin/admin/internal/form"
 	"github.com/go-advanced-admin/admin/internal/form/fields"
+	"github.com/go-advanced-admin/admin/internal/logging"
 	"github.com/go-advanced-admin/admin/internal/utils"
 	"net/http"
 	"reflect"
@@ -17,6 +18,10 @@ type App struct {
 	ModelsSlice []*Model
 	Panel       *AdminPanel
 	ORM         ORMIntegrator
+}
+
+func (a *App) CreateViewLog(ctx interface{}) error {
+	return a.Panel.Config.CreateLog(ctx, logging.LogStoreLevelPanelView, a.Name, nil, "", "")
 }
 
 func (a *App) GetORM() ORMIntegrator {
@@ -404,6 +409,10 @@ func (a *App) GetHandler() HandlerFunc {
 		}
 
 		html, err := a.Panel.Config.Renderer.RenderTemplate("app", map[string]interface{}{"app": a, "models": models, "navBarItems": a.Panel.Config.GetNavBarItems(data)})
+		if err != nil {
+			return GetErrorHTML(http.StatusInternalServerError, err)
+		}
+		err = a.CreateViewLog(data)
 		if err != nil {
 			return GetErrorHTML(http.StatusInternalServerError, err)
 		}

@@ -3,6 +3,7 @@ package adminpanel
 import (
 	"fmt"
 	"github.com/go-advanced-admin/admin/internal"
+	"github.com/go-advanced-admin/admin/internal/logging"
 	"github.com/go-advanced-admin/admin/internal/utils"
 	"net/http"
 )
@@ -14,6 +15,10 @@ type AdminPanel struct {
 	ORM               ORMIntegrator
 	Web               WebIntegrator
 	Config            AdminConfig
+}
+
+func (ap *AdminPanel) CreateViewLog(ctx interface{}) error {
+	return ap.Config.CreateLog(ctx, logging.LogStoreLevelPanelView, "", nil, "", "")
 }
 
 func (ap *AdminPanel) GetORM() ORMIntegrator {
@@ -78,7 +83,16 @@ func (ap *AdminPanel) GetHandler() HandlerFunc {
 			return GetErrorHTML(http.StatusInternalServerError, err)
 		}
 
-		html, err := ap.Config.Renderer.RenderTemplate("root", map[string]interface{}{"admin": ap, "apps": apps, "navBarItems": ap.Config.GetNavBarItems(data)})
+		html, err := ap.Config.Renderer.RenderTemplate("root", map[string]interface{}{
+			"admin":       ap,
+			"apps":        apps,
+			"navBarItems": ap.Config.GetNavBarItems(data),
+			"logs":        ap.Config.GetLogEntries(20),
+		})
+		if err != nil {
+			return GetErrorHTML(http.StatusInternalServerError, err)
+		}
+		err = ap.CreateViewLog(data)
 		if err != nil {
 			return GetErrorHTML(http.StatusInternalServerError, err)
 		}
