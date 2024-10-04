@@ -9,14 +9,12 @@ import (
 )
 
 type Model struct {
-	Name             string
-	DisplayName      string
-	PTR              interface{}
-	App              *App
-	Fields           []FieldConfig
-	PrimaryKeyGetter func(interface{}) interface{}
-	PrimaryKeyType   reflect.Type
-	ORM              ORMIntegrator
+	Name        string
+	DisplayName string
+	PTR         interface{}
+	App         *App
+	Fields      []FieldConfig
+	ORM         ORMIntegrator
 }
 
 func (m *Model) CreateViewLog(ctx interface{}) error {
@@ -139,7 +137,10 @@ func (m *Model) GetViewHandler() HandlerFunc {
 
 		cleanInstances := make([]Instance, len(pagedInstances))
 		for i, instance := range pagedInstances {
-			id := m.PrimaryKeyGetter(instance)
+			id, err := m.GetPrimaryKeyValue(instance)
+			if err != nil {
+				return GetErrorHTML(http.StatusInternalServerError, err)
+			}
 			updateAllowed, err := m.App.Panel.PermissionChecker.HasInstanceUpdatePermission(m.App.Name, m.Name, id, data)
 			if err != nil {
 				return GetErrorHTML(http.StatusInternalServerError, err)
@@ -178,32 +179,12 @@ func (m *Model) GetViewHandler() HandlerFunc {
 	}
 }
 
-func GetPrimaryKeyGetter(model interface{}) (func(interface{}) interface{}, error) {
-	modelType := reflect.TypeOf(model)
+func (m *Model) GetPrimaryKeyValue(instance interface{}) (interface{}, error) {
+	return m.GetORM().GetPrimaryKeyValue(instance)
+}
 
-	if _, implements := model.(AdminModelGetIDInterface); implements {
-		return func(instance interface{}) interface{} {
-			return instance.(AdminModelGetIDInterface).AdminGetID()
-		}, nil
-	}
-
-	if idField, found := modelType.Elem().FieldByName("ID"); found {
-		return func(instance interface{}) interface{} {
-			instValue := reflect.ValueOf(instance)
-
-			if instValue.Kind() == reflect.Ptr {
-				instValue = instValue.Elem()
-			}
-
-			if !instValue.FieldByName(idField.Name).IsValid() {
-				panic("ID field does not exist in instance")
-			}
-
-			return instValue.FieldByName(idField.Name).Interface()
-		}, nil
-	}
-
-	return nil, fmt.Errorf("no valid primary key method or ID field found. A struct must either have the ID field or implement func AdminGetID() interface{}")
+func (m *Model) GetPrimaryKeyType() (reflect.Type, error) {
+	return m.GetORM().GetPrimaryKeyType(m.PTR)
 }
 
 func filterInstancesByPermission(instances interface{}, model *Model, data interface{}) ([]interface{}, error) {
@@ -221,7 +202,10 @@ func filterInstancesByPermission(instances interface{}, model *Model, data inter
 
 	for i := 0; i < val.Len(); i++ {
 		instance := val.Index(i).Interface()
-		id := model.PrimaryKeyGetter(instance)
+		id, err := model.GetPrimaryKeyValue(instance)
+		if err != nil {
+			return nil, err
+		}
 		allowed, err := model.App.Panel.PermissionChecker.HasInstanceReadPermission(model.App.Name, model.Name, id, data)
 		if err != nil {
 			return nil, err

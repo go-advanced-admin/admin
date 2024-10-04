@@ -20,8 +20,6 @@ type NonPointerModel struct {
 	Name string
 }
 
-type InvalidPointerModel struct{}
-
 type CustomNameModel struct {
 	ID uint
 }
@@ -102,14 +100,6 @@ func TestRegisterModel(t *testing.T) {
 		_, err := testApp.RegisterModel(testString, nil)
 		if err == nil {
 			t.Error("expected an error when registering a pointer to a non-struct type")
-		}
-	})
-
-	t.Run("InvalidPrimaryKeyGetter", func(t *testing.T) {
-		testApp := createTestApp()
-		_, err := testApp.RegisterModel(&InvalidPointerModel{}, nil)
-		if err == nil {
-			t.Error("expected an error due to invalid primary key getter")
 		}
 	})
 
@@ -198,11 +188,6 @@ func TestRegisterModel(t *testing.T) {
 		}
 		if !modelWithID.Fields[0].IncludeInListFetch {
 			t.Error("expected ID field to be included in fetch by default")
-		}
-
-		_, err = testApp.RegisterModel(&ModelWithoutID{}, nil)
-		if err == nil {
-			t.Fatalf("expected an error but instead got no error")
 		}
 	})
 

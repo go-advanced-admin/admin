@@ -8,6 +8,10 @@ import (
 )
 
 func SetStringsAsType(value reflect.Value, input string) error {
+	if !value.CanSet() {
+		return fmt.Errorf("value is not settable")
+	}
+
 	switch value.Kind() {
 	case reflect.String:
 		value.SetString(input)

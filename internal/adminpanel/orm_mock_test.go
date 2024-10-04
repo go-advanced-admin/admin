@@ -1,6 +1,11 @@
 package adminpanel
 
+import "reflect"
+
 type MockORMIntegrator struct{}
+
+func (m *MockORMIntegrator) GetPrimaryKeyValue(interface{}) (interface{}, error) { return nil, nil }
+func (m *MockORMIntegrator) GetPrimaryKeyType(interface{}) (reflect.Type, error) { return nil, nil }
 
 func (m *MockORMIntegrator) FetchInstances(interface{}) (interface{}, error) {
 	return nil, nil

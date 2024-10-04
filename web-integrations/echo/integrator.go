@@ -20,7 +20,7 @@ func NewIntegrator(g *echo.Group) *Integrator {
 func (i *Integrator) HandleRoute(method, path string, handler admin.HandlerFunc) {
 	i.group.Add(method, path, func(c echo.Context) error {
 		code, body := handler(c)
-		if code == http.StatusFound {
+		if code == http.StatusFound || code == http.StatusMovedPermanently || code == http.StatusSeeOther {
 			return c.Redirect(int(code), body)
 		}
 		return c.HTML(int(code), body)

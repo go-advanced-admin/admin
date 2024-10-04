@@ -355,31 +355,13 @@ func (a *App) RegisterModel(model interface{}, orm ORMIntegrator) (*Model, error
 		})
 	}
 
-	var primaryKeyType reflect.Type
-	primaryKeyGetter, err := GetPrimaryKeyGetter(model)
-	if err != nil {
-		return nil, fmt.Errorf("error determining primary key for model '%s': %w", name, err)
-	}
-
-	if idField, found := reflect.TypeOf(model).Elem().FieldByName("ID"); found {
-		primaryKeyType = idField.Type
-	} else if _, ok = model.(AdminModelGetIDInterface); ok {
-		tempInstance := reflect.New(reflect.TypeOf(model).Elem()).Interface()
-		idInterface := tempInstance.(AdminModelGetIDInterface).AdminGetID()
-		primaryKeyType = reflect.TypeOf(idInterface)
-	} else {
-		return nil, fmt.Errorf("could not determine primary key type for model '%s'", name)
-	}
-
 	modelInstance := &Model{
-		Name:             name,
-		DisplayName:      displayName,
-		PTR:              model,
-		App:              a,
-		Fields:           fieldConfigs,
-		PrimaryKeyGetter: primaryKeyGetter,
-		PrimaryKeyType:   primaryKeyType,
-		ORM:              orm,
+		Name:        name,
+		DisplayName: displayName,
+		PTR:         model,
+		App:         a,
+		Fields:      fieldConfigs,
+		ORM:         orm,
 	}
 	a.Panel.Web.HandleRoute("GET", a.Panel.Config.GetPrefix()+modelInstance.GetLink(), modelInstance.GetViewHandler())
 	a.Panel.Web.HandleRoute("GET", a.Panel.Config.GetPrefix()+modelInstance.GetLink()+"/:id/view", modelInstance.GetInstanceViewHandler())
