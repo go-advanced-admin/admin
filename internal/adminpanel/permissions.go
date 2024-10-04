@@ -3,10 +3,11 @@ package adminpanel
 type Action string
 
 const (
-	ReadAction   Action = "read"
-	CreateAction Action = "create"
-	UpdateAction Action = "update"
-	DeleteAction Action = "delete"
+	ReadAction    Action = "read"
+	CreateAction  Action = "create"
+	UpdateAction  Action = "update"
+	DeleteAction  Action = "delete"
+	LogViewAction Action = "log_view"
 )
 
 type PermissionRequest struct {
@@ -24,6 +25,11 @@ type Permissions struct {
 }
 
 type PermissionFunc func(PermissionRequest, interface{}) (bool, error)
+
+func (p PermissionFunc) HasLogViewPermission(data interface{}, logID interface{}) (bool, error) {
+	action := LogViewAction
+	return p(PermissionRequest{Action: &action, InstanceID: logID}, data)
+}
 
 func (p PermissionFunc) HasPermission(r PermissionRequest, data interface{}) (bool, error) {
 	return p(r, data)
