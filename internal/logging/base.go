@@ -14,7 +14,7 @@ type LogEntry struct {
 	Message     string
 }
 
-func (l *LogEntry) Repr() interface{} {
+func (l *LogEntry) Repr() string {
 	if l.ObjectRepr != "" {
 		return l.ObjectRepr
 	}

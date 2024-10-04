@@ -43,6 +43,10 @@ func (ap *AdminPanel) CreateViewLog(ctx interface{}) error {
 	return ap.Config.CreateLog(ctx, logging.LogStoreLevelPanelView, "", nil, "", "")
 }
 
+func (ap *AdminPanel) CreateLogViewLog(ctx interface{}, entry logging.LogEntry) error {
+	return ap.Config.CreateLog(ctx, logging.LogStoreLevelPanelView, "Admin | LogView", entry.ID, entry.Repr(), "")
+}
+
 func (ap *AdminPanel) GetORM() ORMIntegrator {
 	return ap.ORM
 }
@@ -75,7 +79,7 @@ func NewAdminPanel(orm ORMIntegrator, web WebIntegrator, permissionsCheck Permis
 	admin.Config.Renderer.RegisterAssetsFunc(admin.Config.GetAssetLink)
 
 	components := []string{"page.html"}
-	pages := []string{"root", "app", "model", "instance", "edit_instance", "new_instance"}
+	pages := []string{"root", "app", "model", "instance", "edit_instance", "new_instance", "log"}
 
 	for _, page := range pages {
 		err := admin.Config.Renderer.RegisterCompositeDefaultTemplate(page, append([]string{page + ".html"}, components...)...)
@@ -86,6 +90,7 @@ func NewAdminPanel(orm ORMIntegrator, web WebIntegrator, permissionsCheck Permis
 
 	web.ServeAssets(config.AssetsPrefix, config.Renderer)
 	web.HandleRoute("GET", config.GetPrefix(), admin.GetHandler())
+	web.HandleRoute("GET", config.GetPrefix()+admin.GetLogBaseLink()+"/:id", admin.GetLogHandler())
 
 	return &admin, nil
 }
