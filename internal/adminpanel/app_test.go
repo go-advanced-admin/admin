@@ -48,7 +48,7 @@ func TestRegisterModel(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		testApp, err := panel.RegisterApp("TestApp", "Test App")
+		testApp, err := panel.RegisterApp("TestApp", "Test App", nil)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -60,7 +60,7 @@ func TestRegisterModel(t *testing.T) {
 		testModel := &struct {
 			ID uint `gorm:"primarykey"`
 		}{}
-		model, err := testApp.RegisterModel(testModel)
+		model, err := testApp.RegisterModel(testModel, nil)
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -78,11 +78,11 @@ func TestRegisterModel(t *testing.T) {
 	t.Run("DuplicateModel", func(t *testing.T) {
 		testApp := createTestApp()
 		testModel := &TestModel1{}
-		_, err := testApp.RegisterModel(testModel)
+		_, err := testApp.RegisterModel(testModel, nil)
 		if err != nil {
 			t.Fatalf("expected no error on first registration, got %v", err)
 		}
-		_, err = testApp.RegisterModel(testModel)
+		_, err = testApp.RegisterModel(testModel, nil)
 		if err == nil {
 			t.Error("expected an error when registering the same model twice")
 		}
@@ -90,7 +90,7 @@ func TestRegisterModel(t *testing.T) {
 
 	t.Run("NonPointerModel", func(t *testing.T) {
 		testApp := createTestApp()
-		_, err := testApp.RegisterModel(NonPointerModel{})
+		_, err := testApp.RegisterModel(NonPointerModel{}, nil)
 		if err == nil {
 			t.Error("expected an error when registering a non-pointer model")
 		}
@@ -99,7 +99,7 @@ func TestRegisterModel(t *testing.T) {
 	t.Run("PointerToNonStruct", func(t *testing.T) {
 		testApp := createTestApp()
 		var testString *string
-		_, err := testApp.RegisterModel(testString)
+		_, err := testApp.RegisterModel(testString, nil)
 		if err == nil {
 			t.Error("expected an error when registering a pointer to a non-struct type")
 		}
@@ -107,7 +107,7 @@ func TestRegisterModel(t *testing.T) {
 
 	t.Run("InvalidPrimaryKeyGetter", func(t *testing.T) {
 		testApp := createTestApp()
-		_, err := testApp.RegisterModel(&InvalidPointerModel{})
+		_, err := testApp.RegisterModel(&InvalidPointerModel{}, nil)
 		if err == nil {
 			t.Error("expected an error due to invalid primary key getter")
 		}
@@ -116,7 +116,7 @@ func TestRegisterModel(t *testing.T) {
 	t.Run("FieldConfiguration", func(t *testing.T) {
 		testApp := createTestApp()
 		testModel := &TestModel1{}
-		model, err := testApp.RegisterModel(testModel)
+		model, err := testApp.RegisterModel(testModel, nil)
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -133,7 +133,7 @@ func TestRegisterModel(t *testing.T) {
 
 	t.Run("UnknownTagKey", func(t *testing.T) {
 		testApp := createTestApp()
-		_, err := testApp.RegisterModel(&TestModel2{})
+		_, err := testApp.RegisterModel(&TestModel2{}, nil)
 		if err != nil {
 			t.Error("expected no error due to unknown tag key")
 		}
@@ -146,7 +146,7 @@ func TestRegisterModel(t *testing.T) {
 			Name string `admin:"listDisplay:invalid"`
 		}
 
-		_, err := testApp.RegisterModel(&InvalidTagValueModel{})
+		_, err := testApp.RegisterModel(&InvalidTagValueModel{}, nil)
 		if err == nil {
 			t.Error("expected an error due to invalid listDisplay tag value")
 		}
@@ -159,7 +159,7 @@ func TestRegisterModel(t *testing.T) {
 			Name string `admin:"listFetch:invalid"`
 		}
 
-		_, err := testApp.RegisterModel(&InvalidTagFetchModel{})
+		_, err := testApp.RegisterModel(&InvalidTagFetchModel{}, nil)
 		if err == nil {
 			t.Error("expected an error due to invalid listFetch tag value")
 		}
@@ -172,7 +172,7 @@ func TestRegisterModel(t *testing.T) {
 			Name string `admin:"listFetch:exclude"`
 		}
 
-		model, err := testApp.RegisterModel(&ModelExcludeFetch{})
+		model, err := testApp.RegisterModel(&ModelExcludeFetch{}, nil)
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -192,7 +192,7 @@ func TestRegisterModel(t *testing.T) {
 			Status string `admin:"listDisplay:exclude"`
 		}
 
-		modelWithID, err := testApp.RegisterModel(&ModelWithID{})
+		modelWithID, err := testApp.RegisterModel(&ModelWithID{}, nil)
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -200,7 +200,7 @@ func TestRegisterModel(t *testing.T) {
 			t.Error("expected ID field to be included in fetch by default")
 		}
 
-		_, err = testApp.RegisterModel(&ModelWithoutID{})
+		_, err = testApp.RegisterModel(&ModelWithoutID{}, nil)
 		if err == nil {
 			t.Fatalf("expected an error but instead got no error")
 		}
@@ -209,7 +209,7 @@ func TestRegisterModel(t *testing.T) {
 	t.Run("URLSafetyCheck", func(t *testing.T) {
 		testApp := createTestApp()
 
-		_, err := testApp.RegisterModel(&unsafeModelName{})
+		_, err := testApp.RegisterModel(&unsafeModelName{}, nil)
 		if err == nil {
 			t.Error("expected an error due to invalid URL safety of the model's name")
 		}
@@ -222,7 +222,7 @@ func TestRegisterModel(t *testing.T) {
 			ID uint
 		}
 
-		model, err := testApp.RegisterModel(&safeNameModel{})
+		model, err := testApp.RegisterModel(&safeNameModel{}, nil)
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -234,7 +234,7 @@ func TestRegisterModel(t *testing.T) {
 
 	t.Run("CustomNameAndDisplayName", func(t *testing.T) {
 		testApp := createTestApp()
-		model, err := testApp.RegisterModel(&CustomNameModel{})
+		model, err := testApp.RegisterModel(&CustomNameModel{}, nil)
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -251,7 +251,7 @@ func TestRegisterModel(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		testApp, err := panel.RegisterApp("TestApp", "Test App")
+		testApp, err := panel.RegisterApp("TestApp", "Test App", nil)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -270,7 +270,7 @@ func TestRegisterModel(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		testApp, err := panel.RegisterApp("TestApp", "Test App")
+		testApp, err := panel.RegisterApp("TestApp", "Test App", nil)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -289,7 +289,7 @@ func TestRegisterModel(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		testApp, err := panel.RegisterApp("TestApp", "Test App")
+		testApp, err := panel.RegisterApp("TestApp", "Test App", nil)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}

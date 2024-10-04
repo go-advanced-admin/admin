@@ -16,6 +16,10 @@ type AdminPanel struct {
 	Config            AdminConfig
 }
 
+func (ap *AdminPanel) GetORM() ORMIntegrator {
+	return ap.ORM
+}
+
 func NewAdminPanel(orm ORMIntegrator, web WebIntegrator, permissionsCheck PermissionFunc, config *AdminConfig) (*AdminPanel, error) {
 	if orm == nil {
 		return nil, fmt.Errorf("orm integrator cannot be nil")
@@ -82,7 +86,7 @@ func (ap *AdminPanel) GetHandler() HandlerFunc {
 	}
 }
 
-func (ap *AdminPanel) RegisterApp(name, displayName string) (*App, error) {
+func (ap *AdminPanel) RegisterApp(name, displayName string, orm ORMIntegrator) (*App, error) {
 	if _, exists := ap.Apps[name]; exists {
 		return nil, fmt.Errorf("admin app '%s' already exists. Apps cannot be registered more than once", name)
 	}
@@ -91,7 +95,7 @@ func (ap *AdminPanel) RegisterApp(name, displayName string) (*App, error) {
 		return nil, fmt.Errorf("admin app name '%s' is not URL safe", name)
 	}
 
-	app := &App{Name: name, DisplayName: displayName, Models: make(map[string]*Model), ModelsSlice: make([]*Model, 0), Panel: ap}
+	app := &App{Name: name, DisplayName: displayName, Models: make(map[string]*Model), ModelsSlice: make([]*Model, 0), Panel: ap, ORM: orm}
 	ap.Apps[name] = app
 	ap.AppsSlice = append(ap.AppsSlice, app)
 	ap.Web.HandleRoute("GET", ap.Config.GetPrefix()+app.GetLink(), app.GetHandler())

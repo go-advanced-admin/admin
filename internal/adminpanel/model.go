@@ -15,6 +15,14 @@ type Model struct {
 	Fields           []FieldConfig
 	PrimaryKeyGetter func(interface{}) interface{}
 	PrimaryKeyType   reflect.Type
+	ORM              ORMIntegrator
+}
+
+func (m *Model) GetORM() ORMIntegrator {
+	if m.ORM != nil {
+		return m.ORM
+	}
+	return m.App.GetORM()
 }
 
 type AdminModelNameInterface interface {
@@ -90,7 +98,7 @@ func (m *Model) GetViewHandler() HandlerFunc {
 		searchQuery := m.App.Panel.Web.GetQueryParam(data, "search")
 		var instances interface{}
 		if searchQuery == "" {
-			instances, err = m.App.Panel.ORM.FetchInstancesOnlyFields(m.PTR, fieldsToFetch)
+			instances, err = m.GetORM().FetchInstancesOnlyFields(m.PTR, fieldsToFetch)
 		} else {
 			var fieldsToSearch []string
 			for _, fieldConfig := range m.Fields {
@@ -98,7 +106,7 @@ func (m *Model) GetViewHandler() HandlerFunc {
 					fieldsToSearch = append(fieldsToSearch, fieldConfig.Name)
 				}
 			}
-			instances, err = m.App.Panel.ORM.FetchInstancesOnlyFieldWithSearch(m.PTR, fieldsToFetch, searchQuery, fieldsToSearch)
+			instances, err = m.GetORM().FetchInstancesOnlyFieldWithSearch(m.PTR, fieldsToFetch, searchQuery, fieldsToSearch)
 		}
 		if err != nil {
 			return GetErrorHTML(http.StatusInternalServerError, err)

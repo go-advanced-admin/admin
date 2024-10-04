@@ -76,7 +76,7 @@ func TestAdminPanel_RegisterApp(t *testing.T) {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	app, err := panel.RegisterApp("TestApp", "Test App")
+	app, err := panel.RegisterApp("TestApp", "Test App", nil)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
@@ -85,12 +85,12 @@ func TestAdminPanel_RegisterApp(t *testing.T) {
 		t.Fatalf("expected app to be registered, got nil")
 	}
 
-	_, err = panel.RegisterApp("TestApp", "Test App Duplicate")
+	_, err = panel.RegisterApp("TestApp", "Test App Duplicate", nil)
 	if err == nil || err.Error() != "admin app 'TestApp' already exists. Apps cannot be registered more than once" {
 		t.Fatalf("expected error when registering the same app twice, got %v", err)
 	}
 
-	_, err = panel.RegisterApp("Unsafe App!", "Unsafe App")
+	_, err = panel.RegisterApp("Unsafe App!", "Unsafe App", nil)
 	if err == nil || err.Error() != "admin app name 'Unsafe App!' is not URL safe" {
 		t.Fatalf("expected error for unsafe app name, got %v", err)
 	}
