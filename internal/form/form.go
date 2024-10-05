@@ -1,5 +1,11 @@
 package form
 
+import (
+	"fmt"
+	"html/template"
+	"strings"
+)
+
 type ValidationFunc func(map[string]interface{}) (frontend []error, backend error)
 
 type Form interface {
@@ -60,4 +66,43 @@ func GetCleanData(form Form, values map[string]HTMLType) (map[string]interface{}
 	}
 
 	return cleanValues, nil
+}
+
+func RenderFormAsP(form Form) (string, error) {
+	var htmlStrings []string
+	for _, field := range form.GetFields() {
+		fieldHTML, err := field.HTML()
+		if err != nil {
+			return "", err
+		}
+		label := template.HTMLEscapeString(field.GetLabel())
+		htmlStrings = append(htmlStrings, fmt.Sprintf("<p><label>%s: %s</label></p>", label, fieldHTML))
+	}
+	return strings.Join(htmlStrings, "\n"), nil
+}
+
+func RenderFormAsUL(form Form) (string, error) {
+	var htmlStrings []string
+	for _, field := range form.GetFields() {
+		fieldHTML, err := field.HTML()
+		if err != nil {
+			return "", err
+		}
+		label := template.HTMLEscapeString(field.GetLabel())
+		htmlStrings = append(htmlStrings, fmt.Sprintf("<li><label>%s: %s</label></li>", label, fieldHTML))
+	}
+	return fmt.Sprintf("<ul>\n%s\n</ul>", strings.Join(htmlStrings, "\n")), nil
+}
+
+func RenderFormAsTable(form Form) (string, error) {
+	var htmlStrings []string
+	for _, field := range form.GetFields() {
+		fieldHTML, err := field.HTML()
+		if err != nil {
+			return "", err
+		}
+		label := template.HTMLEscapeString(field.GetLabel())
+		htmlStrings = append(htmlStrings, fmt.Sprintf("<tr><th><label>%s</label></th><td>%s</td></tr>", label, fieldHTML))
+	}
+	return fmt.Sprintf("<table>\n%s\n</table>", strings.Join(htmlStrings, "\n")), nil
 }

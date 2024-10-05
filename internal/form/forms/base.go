@@ -64,3 +64,15 @@ func (b *BaseForm) Save(values map[string]form.HTMLType) (interface{}, error) {
 	log.Println("Clean values", cleanValues)
 	return nil, nil
 }
+
+func (b *BaseForm) AsP() (string, error) {
+	return form.RenderFormAsP(b)
+}
+
+func (b *BaseForm) AsUL() (string, error) {
+	return form.RenderFormAsUL(b)
+}
+
+func (b *BaseForm) AsTable() (string, error) {
+	return form.RenderFormAsTable(b)
+}
