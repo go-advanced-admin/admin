@@ -2,7 +2,5 @@ go 1.23.1
 
 use (
 	example
-	web-integrations/echo
-	orm-integrations/gorm
 	.
 )
