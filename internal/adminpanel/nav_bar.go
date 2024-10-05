@@ -2,6 +2,7 @@ package adminpanel
 
 import "fmt"
 
+// NavBarItem represents an item in the navigation bar.
 type NavBarItem struct {
 	Name              string
 	Link              string
@@ -9,6 +10,7 @@ type NavBarItem struct {
 	NavBarAppendSlash bool
 }
 
+// HTML returns the HTML representation of the navigation bar item.
 func (i *NavBarItem) HTML() string {
 	finalHTML := i.Name
 	if i.Bold {
@@ -20,4 +22,5 @@ func (i *NavBarItem) HTML() string {
 	return finalHTML
 }
 
+// NavBarGenerator defines a function type for generating navigation bar items.
 type NavBarGenerator = func(ctx interface{}) NavBarItem
