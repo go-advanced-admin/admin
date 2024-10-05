@@ -8,6 +8,7 @@ import (
 	"net/http"
 )
 
+// AdminPanel represents the admin panel, which manages apps, models, permissions, and configuration.
 type AdminPanel struct {
 	Apps              map[string]*App
 	AppsSlice         []*App
@@ -17,6 +18,7 @@ type AdminPanel struct {
 	Config            AdminConfig
 }
 
+// GetLogEntries retrieves log entries up to the specified maximum count.
 func (ap *AdminPanel) GetLogEntries(ctx interface{}, maxCount uint) []*logging.LogEntry {
 	if ap.Config.LogStore == nil {
 		return []*logging.LogEntry{}
@@ -39,18 +41,22 @@ func (ap *AdminPanel) GetLogEntries(ctx interface{}, maxCount uint) []*logging.L
 	return permissibleEntries
 }
 
+// CreateViewLog creates a log entry when the admin panel is viewed.
 func (ap *AdminPanel) CreateViewLog(ctx interface{}) error {
 	return ap.Config.CreateLog(ctx, logging.LogStoreLevelPanelView, "", nil, "", "")
 }
 
+// CreateLogViewLog creates a log entry when a log entry is viewed.
 func (ap *AdminPanel) CreateLogViewLog(ctx interface{}, entry logging.LogEntry) error {
 	return ap.Config.CreateLog(ctx, logging.LogStoreLevelPanelView, "Admin | LogView", entry.ID, entry.Repr(), "")
 }
 
+// GetORM returns the ORM integrator for the admin panel.
 func (ap *AdminPanel) GetORM() ORMIntegrator {
 	return ap.ORM
 }
 
+// NewAdminPanel creates a new admin panel with the given ORM integrator, web integrator, permission function, and configuration.
 func NewAdminPanel(orm ORMIntegrator, web WebIntegrator, permissionsCheck PermissionFunc, config *AdminConfig) (*AdminPanel, error) {
 	if orm == nil {
 		return nil, fmt.Errorf("orm integrator cannot be nil")
@@ -95,6 +101,7 @@ func NewAdminPanel(orm ORMIntegrator, web WebIntegrator, permissionsCheck Permis
 	return &admin, nil
 }
 
+// GetHandler returns the HTTP handler function for the admin panel's root page.
 func (ap *AdminPanel) GetHandler() HandlerFunc {
 	return func(data interface{}) (uint, string) {
 		allowed, err := ap.PermissionChecker.HasReadPermission(data)
@@ -127,6 +134,7 @@ func (ap *AdminPanel) GetHandler() HandlerFunc {
 	}
 }
 
+// RegisterApp registers a new application with the admin panel.
 func (ap *AdminPanel) RegisterApp(name, displayName string, orm ORMIntegrator) (*App, error) {
 	if _, exists := ap.Apps[name]; exists {
 		return nil, fmt.Errorf("admin app '%s' already exists. Apps cannot be registered more than once", name)
@@ -143,6 +151,7 @@ func (ap *AdminPanel) RegisterApp(name, displayName string, orm ORMIntegrator) (
 	return ap.Apps[name], nil
 }
 
+// GetFullLink returns the full URL path to the admin panel.
 func (ap *AdminPanel) GetFullLink() string {
 	return ap.Config.GetLink("")
 }

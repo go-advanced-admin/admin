@@ -11,6 +11,7 @@ import (
 	"strings"
 )
 
+// App represents an application within the admin panel, grouping related models together.
 type App struct {
 	Name        string
 	DisplayName string
@@ -20,10 +21,12 @@ type App struct {
 	ORM         ORMIntegrator
 }
 
+// CreateViewLog creates a log entry when the app is viewed.
 func (a *App) CreateViewLog(ctx interface{}) error {
 	return a.Panel.Config.CreateLog(ctx, logging.LogStoreLevelPanelView, a.Name, nil, "", "")
 }
 
+// GetORM returns the ORM integrator for the app.
 func (a *App) GetORM() ORMIntegrator {
 	if a.ORM != nil {
 		return a.ORM
@@ -31,6 +34,7 @@ func (a *App) GetORM() ORMIntegrator {
 	return a.Panel.GetORM()
 }
 
+// RegisterModel registers a model with the app, making it available in the admin interface.
 func (a *App) RegisterModel(model interface{}, orm ORMIntegrator) (*Model, error) {
 	modelType := reflect.TypeOf(model)
 
@@ -375,6 +379,7 @@ func (a *App) RegisterModel(model interface{}, orm ORMIntegrator) (*Model, error
 	return modelInstance, nil
 }
 
+// GetHandler returns the HTTP handler function for the app's main page.
 func (a *App) GetHandler() HandlerFunc {
 	return func(data interface{}) (uint, string) {
 		allowed, err := a.Panel.PermissionChecker.HasAppReadPermission(a.Name, data)
@@ -402,10 +407,12 @@ func (a *App) GetHandler() HandlerFunc {
 	}
 }
 
+// GetLink returns the relative URL path to the app.
 func (a *App) GetLink() string {
 	return fmt.Sprintf("/a/%s", a.Name)
 }
 
+// GetFullLink returns the full URL path to the app, including the admin prefix.
 func (a *App) GetFullLink() string {
 	return a.Panel.Config.GetLink(a.GetLink())
 }
