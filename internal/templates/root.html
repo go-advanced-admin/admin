@@ -1,0 +1,78 @@
+{{ template "header" }}
+
+<body class="min-h-screen bg-base-200">
+    <div class="drawer lg:drawer-open">
+        <input id="sidebar" type="checkbox" class="drawer-toggle" />
+        <div class="drawer-content min-h-full bg-base-200">
+            <!-- Navbar -->
+            {{ template "navBar" . }}
+            <!-- Path Bar -->
+            <div class="bg-base-100 w-full h-10">
+                <p class="p-2"><a href="{{ .model.App.Panel.GetFullLink }}">Home</a> > <a
+                        href="{{ .model.App.GetFullLink }}">{{ .model.App.DisplayName }}</a> > {{ .model.DisplayName }}
+                </p>
+            </div>
+
+            <div class="bg-base-200 m-4">
+                <h1>Applications:</h1>
+
+                {{ range .apps }}
+                <div class="card bg-base-100 w-96 shadow-xl m-4">
+                    <div class="card-body p-6">
+                        <h2 href="{{ .app.GetFullLink }}" class="card-title text-sm">{{ .app.DisplayName }}</h2>
+
+                        <div class="overflow-x-auto">
+                            <table class="table">
+                                <tbody>
+                                    {{ range .models }}
+                                    {{ if .permissions.Read }}
+                                    <tr>
+                                        <td>
+                                            <a href="{{.model.GetFullLink}}" class="link">{{.model.DisplayName}}</a>
+                                        </td>
+
+                                        <td class="m-0 p-0">
+                                            <a href="{{.model.GetFullLink}}" class="link text-right">View</a>
+                                        </td>
+
+                                        {{ if.permissions.Create }}
+                                        <td class="m-0 p-0">
+                                            <a href="{{.model.GetFullAddLink}}" class="link text-right">Add</a>
+                                        </td>
+                                        {{ else }}
+                                        <td>
+                                            <p class="text-right m-0 p-0">Add</p>
+                                        </td>
+                                        {{ end }}
+                                    </tr>
+                                    {{ end }}
+                                    {{ end }}
+                                </tbody>
+                            </table>
+                        </div>
+
+
+                    </div>
+                </div>
+                {{ end }}
+
+
+            </div>
+
+            {{ if .logs }}
+            <div>
+                <h2>Logs</h2>
+                <ul>
+                    {{ $fullLogBaseLink := .admin.GetFullLogBaseLink}}
+                    {{ range .logs }}
+                        <li><a href="{{ $fullLogBaseLink }}/{{ .ID }}">{{ .Repr }}: {{ .ContentType }}</a></li>
+                    {{ end }}
+                </ul>
+            </div>
+            {{ end }}
+        </div>
+
+        {{ template "drawerSide" . }}
+    </div>
+</body>
+{{ template "footer" }}

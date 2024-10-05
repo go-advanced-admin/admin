@@ -1,0 +1,94 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, build output
+*.test
+*.out
+
+# Go workspace folders and build cache
+/pkg/
+/bin/
+/cmd/
+
+# Go module download cache (go version 1.11+)
+# It's common to store modules in the GOPATH/pkg/mod directory.
+# Uncomment if using modules.
+# /vendor/
+
+# Standard Go build generated files
+*.a
+*.o
+*.obj
+
+# Editor specific files
+*~
+
+# Logs & debugging
+*.log
+
+# IDE specific files (JetBrains GoLand)
+.idea/
+*.iml
+
+# JetBrains Project-specific settings
+.idea/*
+
+# Mac and Linux specific files
+.DS_Store
+.Trashes
+._*
+.Spotlight-V100
+.fseventsd
+
+# Windows specific files
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# Editor backup/swap files
+*.swp
+*.swo
+*.tmp
+*.bak
+*.orig
+
+# Dependency directories
+vendor/
+
+# Ignore local environment configuration
+.env
+.env.local
+.env.*
+
+# IDE specific settings and metadata folders
+.vscode/
+.venv/
+
+# GoLand run configurations
+.idea/runConfigurations/
+
+# GoLand specific cache directories
+.idea/workspace.xml
+.idea/assetWizardSettings.xml
+.idea/tasks.xml
+.idea/vcs.xml
+.idea/gradle.xml
+.idea/misc.xml
+.idea/modules.xml
+
+# GoLand local history
+.idea/localHistory
+
+# Go workspace specific directories (for GOPATH)
+Godeps/
+
+
+*db
+/coverage
+
+/tmp
+example/tmp

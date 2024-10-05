@@ -1,0 +1,7 @@
+services:
+  root-tests:
+    build:
+      context: .
+      dockerfile: testing/Dockerfile-root
+    volumes:
+      - .:/app
