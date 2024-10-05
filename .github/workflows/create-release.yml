@@ -26,6 +26,6 @@ jobs:
           name: "Release ${{ github.ref_name }}"
           tag: ${{ github.ref_name }}
           publish: true
-          prerelease: false
+          prerelease: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
