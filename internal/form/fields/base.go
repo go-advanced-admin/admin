@@ -7,6 +7,7 @@ import (
 
 type BaseField struct {
 	Name                  string
+	Label                 string
 	ValidationFuncs       []form.FieldValidationFunc
 	InitialValue          interface{}
 	SupersedingAttributes map[string]*string
@@ -33,6 +34,18 @@ func (f *BaseField) RegisterName(name string) error {
 	}
 	f.Name = name
 	return nil
+}
+
+func (f *BaseField) RegisterLabel(label string) error {
+	if label == "" {
+		return errors.New("field label cannot be empty")
+	}
+	f.Label = label
+	return nil
+}
+
+func (f *BaseField) GetLabel() string {
+	return f.Label
 }
 
 func (f *BaseField) RegisterValidationFunctions(validationFuncs ...form.FieldValidationFunc) {
