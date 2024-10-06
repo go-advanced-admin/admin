@@ -68,7 +68,18 @@ func GetCleanData(form Form, values map[string]HTMLType) (map[string]interface{}
 	return cleanValues, nil
 }
 
-func RenderFormAsP(form Form) (string, error) {
+func renderErrors(errors []error) string {
+	if len(errors) == 0 {
+		return ""
+	}
+	var errStrings []string
+	for _, err := range errors {
+		errStrings = append(errStrings, template.HTMLEscapeString(err.Error()))
+	}
+	return fmt.Sprintf(`<ul class="errorlist"><li>%s</li></ul>`, strings.Join(errStrings, "</li><li>"))
+}
+
+func RenderFormAsP(form Form, formErrs []error, fieldsErrs map[string][]error) (string, error) {
 	var htmlStrings []string
 	for _, field := range form.GetFields() {
 		fieldHTML, err := field.HTML()
@@ -76,12 +87,20 @@ func RenderFormAsP(form Form) (string, error) {
 			return "", err
 		}
 		label := template.HTMLEscapeString(field.GetLabel())
-		htmlStrings = append(htmlStrings, fmt.Sprintf("<p><label>%s: %s</label></p>", label, fieldHTML))
+		fieldErrs, exists := fieldsErrs[field.GetName()]
+		fieldErrors := ""
+		if exists && len(fieldErrs) > 0 {
+			fieldErrors = renderErrors(fieldErrs)
+		}
+		htmlStrings = append(htmlStrings, fmt.Sprintf("<p><label>%s: %s</label>%s</p>", label, fieldHTML, fieldErrors))
+	}
+	if len(formErrs) > 0 {
+		htmlStrings = append(htmlStrings, renderErrors(formErrs))
 	}
 	return strings.Join(htmlStrings, "\n"), nil
 }
 
-func RenderFormAsUL(form Form) (string, error) {
+func RenderFormAsUL(form Form, formErrs []error, fieldsErrs map[string][]error) (string, error) {
 	var htmlStrings []string
 	for _, field := range form.GetFields() {
 		fieldHTML, err := field.HTML()
@@ -89,12 +108,20 @@ func RenderFormAsUL(form Form) (string, error) {
 			return "", err
 		}
 		label := template.HTMLEscapeString(field.GetLabel())
-		htmlStrings = append(htmlStrings, fmt.Sprintf("<li><label>%s: %s</label></li>", label, fieldHTML))
+		fieldErrs, exists := fieldsErrs[field.GetName()]
+		fieldErrors := ""
+		if exists && len(fieldErrs) > 0 {
+			fieldErrors = renderErrors(fieldErrs)
+		}
+		htmlStrings = append(htmlStrings, fmt.Sprintf("<li><label>%s: %s</label>%s</li>", label, fieldHTML, fieldErrors))
+	}
+	if len(formErrs) > 0 {
+		htmlStrings = append(htmlStrings, renderErrors(formErrs))
 	}
 	return fmt.Sprintf("<ul>\n%s\n</ul>", strings.Join(htmlStrings, "\n")), nil
 }
 
-func RenderFormAsTable(form Form) (string, error) {
+func RenderFormAsTable(form Form, formErrs []error, fieldsErrs map[string][]error) (string, error) {
 	var htmlStrings []string
 	for _, field := range form.GetFields() {
 		fieldHTML, err := field.HTML()
@@ -102,7 +129,15 @@ func RenderFormAsTable(form Form) (string, error) {
 			return "", err
 		}
 		label := template.HTMLEscapeString(field.GetLabel())
-		htmlStrings = append(htmlStrings, fmt.Sprintf("<tr><th><label>%s</label></th><td>%s</td></tr>", label, fieldHTML))
+		fieldErrs, exists := fieldsErrs[field.GetName()]
+		fieldErrors := ""
+		if exists && len(fieldErrs) > 0 {
+			fieldErrors = renderErrors(fieldErrs)
+		}
+		htmlStrings = append(htmlStrings, fmt.Sprintf("<tr><th><label>%s</label></th><td>%s%s</td></tr>", label, fieldHTML, fieldErrors))
+	}
+	if len(formErrs) > 0 {
+		htmlStrings = append(htmlStrings, fmt.Sprintf("<tr><td colspan=\"2\">%s</td></tr>", renderErrors(formErrs)))
 	}
 	return fmt.Sprintf("<table>\n%s\n</table>", strings.Join(htmlStrings, "\n")), nil
 }
