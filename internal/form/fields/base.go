@@ -3,6 +3,7 @@ package fields
 import (
 	"errors"
 	"github.com/go-advanced-admin/admin/internal/form"
+	"github.com/go-advanced-admin/admin/internal/utils"
 )
 
 type BaseField struct {
@@ -45,6 +46,9 @@ func (f *BaseField) RegisterLabel(label string) error {
 }
 
 func (f *BaseField) GetLabel() string {
+	if f.Label == "" {
+		return utils.HumanizeName(f.Name)
+	}
 	return f.Label
 }
 
