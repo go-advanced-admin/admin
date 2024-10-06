@@ -92,7 +92,7 @@ func RenderFormAsP(form Form, formErrs []error, fieldsErrs map[string][]error) (
 		if exists && len(fieldErrs) > 0 {
 			fieldErrors = renderErrors(fieldErrs)
 		}
-		htmlStrings = append(htmlStrings, fmt.Sprintf(`<p><label for="%s">%s: %s</label>%s</p>`, field.GetName(), label, fieldHTML, fieldErrors))
+		htmlStrings = append(htmlStrings, fmt.Sprintf(`<p><label for="%s">%s:</label> %s%s</p>`, field.GetName(), label, fieldHTML, fieldErrors))
 	}
 	if len(formErrs) > 0 {
 		htmlStrings = append(htmlStrings, renderErrors(formErrs))
@@ -113,7 +113,7 @@ func RenderFormAsUL(form Form, formErrs []error, fieldsErrs map[string][]error) 
 		if exists && len(fieldErrs) > 0 {
 			fieldErrors = renderErrors(fieldErrs)
 		}
-		htmlStrings = append(htmlStrings, fmt.Sprintf(`<li><label for="%s">%s: %s</label>%s</li>`, field.GetName(), label, fieldHTML, fieldErrors))
+		htmlStrings = append(htmlStrings, fmt.Sprintf(`<li><label for="%s">%s:</label> %s%s</li>`, field.GetName(), label, fieldHTML, fieldErrors))
 	}
 	if len(formErrs) > 0 {
 		htmlStrings = append(htmlStrings, renderErrors(formErrs))

@@ -158,3 +158,7 @@ func (i *Integrator) FetchInstanceOnlyFields(model interface{}, id interface{}, 
 	return instance, nil
 
 }
+
+func (i *Integrator) CreateInstance(instance interface{}) error {
+	return i.DB.Create(instance).Error
+}

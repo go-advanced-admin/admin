@@ -20,6 +20,9 @@ func NewIntegrator(g *echo.Group) *Integrator {
 func (i *Integrator) HandleRoute(method, path string, handler admin.HandlerFunc) {
 	i.group.Add(method, path, func(c echo.Context) error {
 		code, body := handler(c)
+		if code == http.StatusFound {
+			return c.Redirect(int(code), body)
+		}
 		return c.HTML(int(code), body)
 	})
 }
@@ -57,5 +60,8 @@ func (i *Integrator) GetRequestMethod(ctx interface{}) string {
 
 func (i *Integrator) GetFormData(ctx interface{}) map[string][]string {
 	ec := ctx.(echo.Context)
+	if err := ec.Request().ParseForm(); err != nil {
+		return nil
+	}
 	return ec.Request().Form
 }

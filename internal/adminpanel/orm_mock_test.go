@@ -21,3 +21,7 @@ func (m *MockORMIntegrator) DeleteInstance(interface{}, interface{}) error {
 func (m *MockORMIntegrator) FetchInstanceOnlyFields(interface{}, interface{}, []string) (interface{}, error) {
 	return nil, nil
 }
+
+func (m *MockORMIntegrator) CreateInstance(interface{}) error {
+	return nil
+}

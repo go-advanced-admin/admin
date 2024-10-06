@@ -115,8 +115,51 @@ func (m *Model) GetInstanceViewHandler() HandlerFunc {
 	}
 }
 
+type ModelAddForm struct {
+	forms.BaseForm
+	Model *Model
+}
+
+func (f *ModelAddForm) Save(values map[string]form.HTMLType) (interface{}, error) {
+	cleanValues, err := form.GetCleanData(f, values)
+	if err != nil {
+		return nil, err
+	}
+
+	modelType := reflect.TypeOf(f.Model.PTR).Elem()
+	instancePtr := reflect.New(modelType)
+	instanceVal := instancePtr.Elem()
+
+	for fieldName, value := range cleanValues {
+		fieldVal := instanceVal.FieldByName(fieldName)
+		if !fieldVal.IsValid() {
+			continue
+		}
+		if !fieldVal.CanSet() {
+			return nil, fmt.Errorf("field %s is not settable", fieldName)
+		}
+		val := reflect.ValueOf(value)
+		if val.Type().AssignableTo(fieldVal.Type()) {
+			fieldVal.Set(val)
+		} else if val.Type().ConvertibleTo(fieldVal.Type()) {
+			fieldVal.Set(val.Convert(fieldVal.Type()))
+		} else {
+			return nil, fmt.Errorf("field %s has invalid type", fieldName)
+		}
+	}
+
+	err = f.Model.App.Panel.ORM.CreateInstance(instancePtr.Interface())
+	if err != nil {
+		return nil, err
+	}
+
+	return instancePtr.Interface(), nil
+}
+
 func (m *Model) NewAddForm() (form.Form, error) {
-	f := &forms.BaseForm{}
+	f := &ModelAddForm{
+		Model: m,
+	}
 
 	for _, fieldConfig := range m.Fields {
 		if !fieldConfig.IncludeInAddForm {
@@ -173,6 +216,9 @@ func (m *Model) GetAddHandler() HandlerFunc {
 			return http.StatusOK, html
 		} else if method == "POST" {
 			formData := m.App.Panel.Web.GetFormData(data)
+			if formData == nil {
+				return GetErrorHTML(http.StatusBadRequest, fmt.Errorf("form data is required"))
+			}
 			convertedFormData, err := form.ConvertFormDataToHTMLTypeMap(formData)
 			if err != nil {
 				return GetErrorHTML(http.StatusInternalServerError, err)
@@ -222,12 +268,15 @@ func (m *Model) GetAddHandler() HandlerFunc {
 				return GetErrorHTML(http.StatusInternalServerError, err)
 			}
 
-			instance, ok := instanceInterface.(Instance)
-			if !ok {
-				return GetErrorHTML(http.StatusInternalServerError, fmt.Errorf("form.Save() return type is not of type Instance"))
+			instance := instanceInterface
+			instanceID := m.PrimaryKeyGetter(instance)
+			if instanceID == nil {
+				return GetErrorHTML(http.StatusInternalServerError, fmt.Errorf("instance id is nil"))
 			}
 
-			return http.StatusFound, instance.GetLink()
+			instanceLink := fmt.Sprintf("%s/%v", m.GetFullLink(), instanceID)
+
+			return http.StatusFound, instanceLink
 		} else {
 			return GetErrorHTML(http.StatusMethodNotAllowed, fmt.Errorf("method not allowed"))
 		}
