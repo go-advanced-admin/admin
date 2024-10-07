@@ -76,6 +76,16 @@ func (a *App) RegisterModel(model interface{}, orm ORMIntegrator) (*Model, error
 	for i := 0; i < modelType.NumField(); i++ {
 		field := modelType.Field(i)
 		fieldName := field.Name
+
+		fieldType := field.Type
+
+		isPointer := false
+		underlyingType := fieldType
+		if fieldType.Kind() == reflect.Ptr {
+			isPointer = true
+			underlyingType = fieldType.Elem()
+		}
+
 		fieldDisplayName := utils.HumanizeName(fieldName)
 		includeInList := true
 		includeInFetch := true
@@ -162,11 +172,9 @@ func (a *App) RegisterModel(model interface{}, orm ORMIntegrator) (*Model, error
 			}
 		}
 
-		fieldType := field.Type
-
 		var formField form.Field
 		if includeInAddForm || includeInEditForm {
-			switch fieldType.Kind() {
+			switch underlyingType.Kind() {
 			case reflect.String:
 				formField = &fields.TextField{}
 				if tag != "" {
@@ -190,21 +198,21 @@ func (a *App) RegisterModel(model interface{}, orm ORMIntegrator) (*Model, error
 						case "maxLength":
 							maxLengthInterface, err := utils.ConvertStringToType(value, reflect.TypeOf(uint(0)))
 							if err != nil {
-								return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, fieldType.Name(), err)
+								return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, underlyingType.Name(), err)
 							}
 							maxLength, ok := maxLengthInterface.(uint)
 							if !ok {
-								return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, fieldType.Name(), err)
+								return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, underlyingType.Name(), err)
 							}
 							formField.(*fields.TextField).MaxLength = &maxLength
 						case "minLength":
 							minLengthInterface, err := utils.ConvertStringToType(value, reflect.TypeOf(uint(0)))
 							if err != nil {
-								return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, fieldType.Name(), err)
+								return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, underlyingType.Name(), err)
 							}
 							minLength, ok := minLengthInterface.(uint)
 							if !ok {
-								return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, fieldType.Name(), err)
+								return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, underlyingType.Name(), err)
 							}
 							formField.(*fields.TextField).MinLength = &minLength
 						}
@@ -229,21 +237,21 @@ func (a *App) RegisterModel(model interface{}, orm ORMIntegrator) (*Model, error
 						case "max":
 							maxInterface, err := utils.ConvertStringToType(value, reflect.TypeOf(0))
 							if err != nil {
-								return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, fieldType.Name(), err)
+								return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, underlyingType.Name(), err)
 							}
 							maxValue, ok := maxInterface.(int)
 							if !ok {
-								return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, fieldType.Name(), err)
+								return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, underlyingType.Name(), err)
 							}
 							formField.(*fields.IntegerField).MaxValue = &maxValue
 						case "min":
 							minInterface, err := utils.ConvertStringToType(value, reflect.TypeOf(0))
 							if err != nil {
-								return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, fieldType.Name(), err)
+								return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, underlyingType.Name(), err)
 							}
 							minValue, ok := minInterface.(int)
 							if !ok {
-								return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, fieldType.Name(), err)
+								return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, underlyingType.Name(), err)
 							}
 							formField.(*fields.IntegerField).MinValue = &minValue
 						}
@@ -268,21 +276,21 @@ func (a *App) RegisterModel(model interface{}, orm ORMIntegrator) (*Model, error
 						case "max":
 							maxInterface, err := utils.ConvertStringToType(value, reflect.TypeOf(float64(0)))
 							if err != nil {
-								return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, fieldType.Name(), err)
+								return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, underlyingType.Name(), err)
 							}
 							maxValue, ok := maxInterface.(float64)
 							if !ok {
-								return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, fieldType.Name(), err)
+								return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, underlyingType.Name(), err)
 							}
 							formField.(*fields.FloatField).MaxValue = &maxValue
 						case "min":
 							minInterface, err := utils.ConvertStringToType(value, reflect.TypeOf(float64(0)))
 							if err != nil {
-								return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, fieldType.Name(), err)
+								return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, underlyingType.Name(), err)
 							}
 							minValue, ok := minInterface.(float64)
 							if !ok {
-								return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, fieldType.Name(), err)
+								return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, underlyingType.Name(), err)
 							}
 							formField.(*fields.FloatField).MinValue = &minValue
 						}
@@ -332,9 +340,9 @@ func (a *App) RegisterModel(model interface{}, orm ORMIntegrator) (*Model, error
 
 					switch key {
 					case "initial":
-						convertedValue, err := utils.ConvertStringToType(value, fieldType)
+						convertedValue, err := utils.ConvertStringToType(value, underlyingType)
 						if err != nil {
-							return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, fieldType.Name(), err)
+							return nil, fmt.Errorf("error converting value '%s' to type '%s': %w", value, underlyingType.Name(), err)
 						}
 						formField.RegisterInitialValue(convertedValue)
 					}
@@ -364,7 +372,8 @@ func (a *App) RegisterModel(model interface{}, orm ORMIntegrator) (*Model, error
 		fieldConfigs = append(fieldConfigs, FieldConfig{
 			Name:                  fieldName,
 			DisplayName:           fieldDisplayName,
-			FieldType:             fieldType,
+			FieldType:             underlyingType,
+			IsPointer:             isPointer,
 			IncludeInListDisplay:  includeInList,
 			IncludeInListFetch:    includeInFetch,
 			IncludeInSearch:       includeInSearch,

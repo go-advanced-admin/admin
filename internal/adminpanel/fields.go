@@ -10,6 +10,7 @@ type FieldConfig struct {
 	Name                  string
 	DisplayName           string
 	FieldType             reflect.Type
+	IsPointer             bool
 	IncludeInListFetch    bool
 	IncludeInListDisplay  bool
 	IncludeInSearch       bool
