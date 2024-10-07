@@ -17,6 +17,9 @@ type FieldConfig struct {
 	IncludeInInstanceView bool
 	AddFormField          form.Field
 	EditFormField         form.Field
+	IsForeignKeyInstance  bool
+	IsForeignKeyID        bool
+	RelatedModel          *Model
 }
 
 // AdminFormFieldInterface allows a model to customize form fields for add and edit operations.

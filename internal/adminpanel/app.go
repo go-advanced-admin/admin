@@ -72,6 +72,35 @@ func (a *App) RegisterModel(model interface{}, orm ORMIntegrator) (*Model, error
 		return nil, fmt.Errorf("admin model '%s' already exists in app '%s'. Models cannot be registered more than once", name, a.Name)
 	}
 
+	foreignKeyFields := make(map[string]*Model)
+	foreignKeyIDFields := make(map[string]bool)
+
+	for i := 0; i < modelType.NumField(); i++ {
+		field := modelType.Field(i)
+		fieldName := field.Name
+
+		fieldType := field.Type
+
+		underlyingType := fieldType
+		if fieldType.Kind() == reflect.Ptr {
+			underlyingType = fieldType.Elem()
+		}
+
+		var relatedModel *Model
+		if m, ok := a.Panel.RegisteredModelTypes[underlyingType]; ok {
+			relatedModel = m
+		}
+
+		if relatedModel != nil {
+			foreignKeyFields[fieldName] = relatedModel
+
+			foreignKeyIDFieldName := fieldName + "ID"
+			if _, ok := modelType.FieldByName(foreignKeyIDFieldName); ok {
+				foreignKeyIDFields[foreignKeyIDFieldName] = true
+			}
+		}
+	}
+
 	var fieldConfigs []FieldConfig
 	for i := 0; i < modelType.NumField(); i++ {
 		field := modelType.Field(i)
@@ -86,6 +115,18 @@ func (a *App) RegisterModel(model interface{}, orm ORMIntegrator) (*Model, error
 			underlyingType = fieldType.Elem()
 		}
 
+		var isForeignKeyInstance bool
+		var relatedModel *Model
+		if rmodel, ok := foreignKeyFields[fieldName]; ok {
+			isForeignKeyInstance = true
+			relatedModel = rmodel
+		}
+
+		var isForeignKeyID bool
+		if _, ok := foreignKeyIDFields[fieldName]; ok {
+			isForeignKeyID = true
+		}
+
 		fieldDisplayName := utils.HumanizeName(fieldName)
 		includeInList := true
 		includeInFetch := true
@@ -93,6 +134,14 @@ func (a *App) RegisterModel(model interface{}, orm ORMIntegrator) (*Model, error
 		includeInInstanceView := true
 		includeInAddForm := true
 		includeInEditForm := true
+		if isForeignKeyInstance {
+			includeInFetch = false
+			includeInList = false
+			includeInSearch = false
+			includeInInstanceView = false
+			includeInAddForm = false
+			includeInEditForm = false
+		}
 		var formAddField form.Field
 		var formEditField form.Field
 
@@ -380,6 +429,9 @@ func (a *App) RegisterModel(model interface{}, orm ORMIntegrator) (*Model, error
 			IncludeInInstanceView: includeInInstanceView,
 			AddFormField:          formAddField,
 			EditFormField:         formEditField,
+			IsForeignKeyInstance:  isForeignKeyInstance,
+			IsForeignKeyID:        isForeignKeyID,
+			RelatedModel:          relatedModel,
 		})
 	}
 
@@ -400,6 +452,7 @@ func (a *App) RegisterModel(model interface{}, orm ORMIntegrator) (*Model, error
 	a.Panel.Web.HandleRoute("POST", a.Panel.Config.GetPrefix()+modelInstance.GetLink()+"/:id/edit", modelInstance.GetEditHandler())
 	a.ModelsSlice = append(a.ModelsSlice, modelInstance)
 	a.Models[name] = modelInstance
+	a.Panel.RegisteredModelTypes[reflect.TypeOf(model).Elem()] = modelInstance
 	return modelInstance, nil
 }
 
