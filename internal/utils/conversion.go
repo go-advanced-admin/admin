@@ -3,6 +3,7 @@ package utils
 import (
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
 	"reflect"
 	"strconv"
 )
@@ -28,6 +29,14 @@ func SetStringsAsType(value reflect.Value, input string) error {
 		}
 		value.SetUint(parsed)
 	default:
+		if value.Type() == reflect.TypeOf(uuid.UUID{}) {
+			u, err := uuid.Parse(input)
+			if err != nil {
+				return err
+			}
+			value.Set(reflect.ValueOf(u))
+			return nil
+		}
 		return fmt.Errorf("unsupported type: %s", value.Type())
 	}
 
@@ -63,6 +72,13 @@ func ConvertStringToType(s string, t reflect.Type) (interface{}, error) {
 		}
 		return b, nil
 	default:
+		if t == reflect.TypeOf(uuid.UUID{}) {
+			u, err := uuid.Parse(s)
+			if err != nil {
+				return nil, err
+			}
+			return u, nil
+		}
 		return nil, errors.New("unsupported kind: " + t.Kind().String())
 	}
 }
