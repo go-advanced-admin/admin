@@ -6,16 +6,18 @@ import (
 	"github.com/go-advanced-admin/admin/internal/logging"
 	"github.com/go-advanced-admin/admin/internal/utils"
 	"net/http"
+	"reflect"
 )
 
 // AdminPanel represents the admin panel, which manages apps, models, permissions, and configuration.
 type AdminPanel struct {
-	Apps              map[string]*App
-	AppsSlice         []*App
-	PermissionChecker PermissionFunc
-	ORM               ORMIntegrator
-	Web               WebIntegrator
-	Config            AdminConfig
+	Apps                 map[string]*App
+	AppsSlice            []*App
+	PermissionChecker    PermissionFunc
+	ORM                  ORMIntegrator
+	Web                  WebIntegrator
+	Config               AdminConfig
+	RegisteredModelTypes map[reflect.Type]*Model
 }
 
 // GetLogEntries retrieves log entries up to the specified maximum count.
@@ -71,12 +73,13 @@ func NewAdminPanel(orm ORMIntegrator, web WebIntegrator, permissionsCheck Permis
 		config = NewDefaultAdminConfig()
 	}
 	admin := AdminPanel{
-		Apps:              make(map[string]*App),
-		AppsSlice:         make([]*App, 0),
-		PermissionChecker: permissionsCheck,
-		ORM:               orm,
-		Web:               web,
-		Config:            *config,
+		Apps:                 make(map[string]*App),
+		AppsSlice:            make([]*App, 0),
+		PermissionChecker:    permissionsCheck,
+		ORM:                  orm,
+		Web:                  web,
+		Config:               *config,
+		RegisteredModelTypes: make(map[reflect.Type]*Model),
 	}
 
 	admin.Config.Renderer.RegisterDefaultTemplates(internal.TemplateFiles, "templates/")
