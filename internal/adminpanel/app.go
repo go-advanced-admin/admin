@@ -6,6 +6,7 @@ import (
 	"github.com/go-advanced-admin/admin/internal/form/fields"
 	"github.com/go-advanced-admin/admin/internal/logging"
 	"github.com/go-advanced-admin/admin/internal/utils"
+	"github.com/google/uuid"
 	"net/http"
 	"reflect"
 	"strings"
@@ -302,7 +303,21 @@ func (a *App) RegisterModel(model interface{}, orm ORMIntegrator) (*Model, error
 					}
 				}
 			default:
-				func() {}() // Nothing happens for this
+				formField = &fields.UUIDField{}
+				if fieldType == reflect.TypeOf(uuid.UUID{}) {
+					if tag != "" {
+						parsedTags := strings.Split(tag, ";")
+						for _, t := range parsedTags {
+							pair := strings.SplitN(t, ":", 2)
+							key := pair[0]
+
+							switch key {
+							case "required":
+								formField.(*fields.UUIDField).Required = true
+							}
+						}
+					}
+				}
 			}
 			if formField != nil && tag != "" {
 				parsedTags := strings.Split(tag, ";")
