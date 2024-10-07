@@ -226,21 +226,35 @@ func (f *ModelAddForm) Save(values map[string]form.HTMLType) (interface{}, error
 			return nil, fmt.Errorf("field %s is not settable", fieldName)
 		}
 
-		if value == nil {
-			if fieldVal.Kind() == reflect.Ptr {
-				fieldVal.Set(reflect.Zero(fieldVal.Type()))
-			}
-			continue
-		}
-
 		val := reflect.ValueOf(value)
 
-		if val.Type().AssignableTo(fieldVal.Type()) {
-			fieldVal.Set(val)
-		} else if val.Type().ConvertibleTo(fieldVal.Type()) {
-			fieldVal.Set(val.Convert(fieldVal.Type()))
+		if fieldVal.Kind() == reflect.Ptr {
+			if value == nil {
+				fieldVal.Set(reflect.Zero(fieldVal.Type()))
+				continue
+			}
+			elemType := fieldVal.Type().Elem()
+			newVal := reflect.New(elemType)
+			if val.Type().AssignableTo(elemType) {
+				newVal.Elem().Set(val)
+			} else if val.Type().ConvertibleTo(elemType) {
+				newVal.Elem().Set(val.Convert(elemType))
+			} else {
+				return nil, fmt.Errorf("field %s has invalid type", fieldName)
+			}
+			fieldVal.Set(newVal)
 		} else {
-			return nil, fmt.Errorf("field %s has invalid type", fieldName)
+			if value == nil {
+				fieldVal.Set(reflect.Zero(fieldVal.Type()))
+				continue
+			}
+			if val.Type().AssignableTo(fieldVal.Type()) {
+				fieldVal.Set(val)
+			} else if val.Type().ConvertibleTo(fieldVal.Type()) {
+				fieldVal.Set(val.Convert(fieldVal.Type()))
+			} else {
+				return nil, fmt.Errorf("field %s has invalid type", fieldName)
+			}
 		}
 	}
 
@@ -279,19 +293,44 @@ func (f *ModelEditForm) Save(values map[string]form.HTMLType) (interface{}, erro
 
 	for fieldName, value := range cleanValues {
 		fieldVal := instanceVal.FieldByName(fieldName)
+
 		if !fieldVal.IsValid() {
-			continue
+			return nil, fmt.Errorf("field %s not found in model", fieldName)
 		}
+
 		if !fieldVal.CanSet() {
 			return nil, fmt.Errorf("field %s is not settable", fieldName)
 		}
+
 		val := reflect.ValueOf(value)
-		if val.Type().AssignableTo(fieldVal.Type()) {
-			fieldVal.Set(val)
-		} else if val.Type().ConvertibleTo(fieldVal.Type()) {
-			fieldVal.Set(val.Convert(fieldVal.Type()))
+
+		if fieldVal.Kind() == reflect.Ptr {
+			if value == nil {
+				fieldVal.Set(reflect.Zero(fieldVal.Type()))
+				continue
+			}
+			elemType := fieldVal.Type().Elem()
+			newVal := reflect.New(elemType)
+			if val.Type().AssignableTo(elemType) {
+				newVal.Elem().Set(val)
+			} else if val.Type().ConvertibleTo(elemType) {
+				newVal.Elem().Set(val.Convert(elemType))
+			} else {
+				return nil, fmt.Errorf("field %s has invalid type", fieldName)
+			}
+			fieldVal.Set(newVal)
 		} else {
-			return nil, fmt.Errorf("field %s has invalid type", fieldName)
+			if value == nil {
+				fieldVal.Set(reflect.Zero(fieldVal.Type()))
+				continue
+			}
+			if val.Type().AssignableTo(fieldVal.Type()) {
+				fieldVal.Set(val)
+			} else if val.Type().ConvertibleTo(fieldVal.Type()) {
+				fieldVal.Set(val.Convert(fieldVal.Type()))
+			} else {
+				return nil, fmt.Errorf("field %s has invalid type", fieldName)
+			}
 		}
 	}
 
@@ -520,7 +559,19 @@ func (m *Model) GetEditHandler() HandlerFunc {
 			if field.EditFormField == nil {
 				continue
 			}
-			initialValuesMap[field.Name] = reflect.ValueOf(instanceData).Elem().FieldByName(field.Name).Interface()
+			fieldValue := reflect.ValueOf(instanceData).Elem().FieldByName(field.Name)
+			var value interface{}
+			if field.IsPointer {
+				if fieldValue.IsNil() {
+					value = nil
+				} else {
+					value = fieldValue.Elem().Interface()
+				}
+			} else {
+				value = fieldValue.Interface()
+			}
+
+			initialValuesMap[field.Name] = value
 		}
 
 		err = formInstance.RegisterInitialValues(initialValuesMap)

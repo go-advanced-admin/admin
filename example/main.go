@@ -29,7 +29,7 @@ type TestModel3 struct {
 
 type TestModel4 struct {
 	ID    uint `gorm:"primarykey"`
-	Title string
+	Title *string
 }
 
 func main() {
@@ -119,8 +119,9 @@ func populateTestModels(db *gorm.DB) {
 	}
 
 	for i := 0; i < 100; i++ {
+		title := fmt.Sprintf("Post Title %d", i)
 		db.Create(&TestModel4{
-			Title: fmt.Sprintf("Post Title %d", i),
+			Title: &title,
 		})
 	}
 }
