@@ -4,15 +4,11 @@ go 1.23.1
 
 replace (
 	github.com/go-advanced-admin/admin => ./../
-	github.com/go-advanced-admin/orm-gorm => ./../orm-integrations/gorm/
-	github.com/go-advanced-admin/web-echo => ./../web-integrations/echo/
 )
 
 require (
 	github.com/glebarez/sqlite v1.11.0
 	github.com/go-advanced-admin/admin v0.0.0
-	github.com/go-advanced-admin/orm-gorm v0.0.0-00010101000000-000000000000
-	github.com/go-advanced-admin/web-echo v0.0.0-00010101000000-000000000000
 	github.com/labstack/echo/v4 v4.12.0
 	gorm.io/gorm v1.25.12
 )
