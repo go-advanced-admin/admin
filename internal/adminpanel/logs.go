@@ -5,14 +5,17 @@ import (
 	"net/http"
 )
 
+// GetLogBaseLink returns the base URL path for logs.
 func (ap *AdminPanel) GetLogBaseLink() string {
 	return "/i/log"
 }
 
+// GetFullLogBaseLink returns the full URL path for logs, including the admin prefix.
 func (ap *AdminPanel) GetFullLogBaseLink() string {
 	return ap.Config.GetLink(ap.GetLogBaseLink())
 }
 
+// GetLogHandler returns the HTTP handler function for viewing a log entry.
 func (ap *AdminPanel) GetLogHandler() HandlerFunc {
 	return func(data interface{}) (uint, string) {
 		instanceIDStr := ap.Web.GetPathParam(data, "id")

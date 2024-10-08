@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// AdminConfig holds configuration settings for the admin panel.
 type AdminConfig struct {
 	Name                    string
 	Prefix                  string
@@ -20,10 +21,13 @@ type AdminConfig struct {
 	LogStoreLevel           logging.LogStoreLevel
 }
 
+// UserFetchFunction defines a function type for fetching user information from the context.
 type UserFetchFunction = func(ctx interface{}) (userID interface{}, repr string, err error)
 
+// DefaultAdminConfig provides default configuration settings for the admin panel.
 var DefaultAdminConfig = NewDefaultAdminConfig()
 
+// NewDefaultAdminConfig returns a new AdminConfig with default settings.
 func NewDefaultAdminConfig() *AdminConfig {
 	navBarGens := []NavBarGenerator{
 		func(interface{}) NavBarItem { return NavBarItem{Name: "Welcome, User. ", Bold: true} },
@@ -44,6 +48,7 @@ func NewDefaultAdminConfig() *AdminConfig {
 	}
 }
 
+// CreateLog creates a log entry using the admin panel's log store.
 func (c *AdminConfig) CreateLog(ctx interface{}, action logging.LogStoreLevel, contentType string, objectID interface{}, objectRepr string, message string) error {
 	if !c.LogStoreLevel.AssessLevel(action) {
 		return nil
@@ -75,6 +80,7 @@ func (c *AdminConfig) CreateLog(ctx interface{}, action logging.LogStoreLevel, c
 	return nil
 }
 
+// GetPrefix returns the URL prefix for the admin panel.
 func (c *AdminConfig) GetPrefix() string {
 	if c.Prefix == "" {
 		return ""
@@ -82,6 +88,7 @@ func (c *AdminConfig) GetPrefix() string {
 	return "/" + c.Prefix
 }
 
+// GetAssetsPrefix returns the URL prefix for admin panel assets.
 func (c *AdminConfig) GetAssetsPrefix() string {
 	if c.AssetsPrefix == "" {
 		return ""
@@ -89,14 +96,17 @@ func (c *AdminConfig) GetAssetsPrefix() string {
 	return "/" + c.AssetsPrefix
 }
 
+// GetLink constructs a full link by combining the group prefix, admin prefix, and the provided link.
 func (c *AdminConfig) GetLink(link string) string {
 	return c.GroupPrefix + c.GetPrefix() + link
 }
 
+// GetAssetLink constructs a full asset link by combining the group prefix, assets prefix, and the file name.
 func (c *AdminConfig) GetAssetLink(fileName string) string {
 	return c.GroupPrefix + c.GetAssetsPrefix() + "/" + fileName
 }
 
+// GetNavBarItems generates the navigation bar items using the registered generators.
 func (c *AdminConfig) GetNavBarItems(ctx interface{}) []NavBarItem {
 	items := make([]NavBarItem, 0)
 	for idx, generator := range c.NavBarGenerators {

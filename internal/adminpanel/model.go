@@ -8,6 +8,7 @@ import (
 	"strconv"
 )
 
+// Model represents a registered model within an app in the admin panel.
 type Model struct {
 	Name        string
 	DisplayName string
@@ -17,10 +18,12 @@ type Model struct {
 	ORM         ORMIntegrator
 }
 
+// CreateViewLog creates a log entry when the model's list view is accessed.
 func (m *Model) CreateViewLog(ctx interface{}) error {
 	return m.App.Panel.Config.CreateLog(ctx, logging.LogStoreLevelListView, fmt.Sprintf("%s | %s", m.App.Name, m.DisplayName), nil, "", "")
 }
 
+// GetORM returns the ORM integrator for the model.
 func (m *Model) GetORM() ORMIntegrator {
 	if m.ORM != nil {
 		return m.ORM
@@ -40,22 +43,27 @@ type AdminModelGetIDInterface interface {
 	AdminGetID() interface{}
 }
 
+// GetLink returns the relative URL path to the model.
 func (m *Model) GetLink() string {
 	return fmt.Sprintf("%s/%s", m.App.GetLink(), m.Name)
 }
 
+// GetFullLink returns the full URL path to the model, including the admin prefix.
 func (m *Model) GetFullLink() string {
 	return m.App.Panel.Config.GetLink(m.GetLink())
 }
 
+// GetAddLink returns the relative URL path to add a new instance of the model.
 func (m *Model) GetAddLink() string {
 	return fmt.Sprintf("%s/add", m.GetLink())
 }
 
+// GetFullAddLink returns the full URL path to add a new instance of the model.
 func (m *Model) GetFullAddLink() string {
 	return m.App.Panel.Config.GetLink(m.GetAddLink())
 }
 
+// GetViewHandler returns the HTTP handler function for the model's list view.
 func (m *Model) GetViewHandler() HandlerFunc {
 	return func(data interface{}) (uint, string) {
 		var page, perPage uint
@@ -179,10 +187,12 @@ func (m *Model) GetViewHandler() HandlerFunc {
 	}
 }
 
+// GetPrimaryKeyValue retrieves the primary key value of an instance.
 func (m *Model) GetPrimaryKeyValue(instance interface{}) (interface{}, error) {
 	return m.GetORM().GetPrimaryKeyValue(instance)
 }
 
+// GetPrimaryKeyType retrieves the primary key type of the model.
 func (m *Model) GetPrimaryKeyType() (reflect.Type, error) {
 	return m.GetORM().GetPrimaryKeyType(m.PTR)
 }

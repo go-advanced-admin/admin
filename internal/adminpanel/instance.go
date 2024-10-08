@@ -11,6 +11,7 @@ import (
 	"reflect"
 )
 
+// Instance represents a single instance of a model in the admin panel.
 type Instance struct {
 	InstanceID  interface{}
 	Data        interface{}
@@ -18,10 +19,13 @@ type Instance struct {
 	Permissions Permissions
 }
 
+// AdminInstanceReprInterface allows customizing the string representation of an instance.
 type AdminInstanceReprInterface interface {
+	// AdminInstanceRepr returns a string representation of the instance.
 	AdminInstanceRepr() string
 }
 
+// GetRepr returns a string representation of the instance.
 func (i *Instance) GetRepr() string {
 	if repr, ok := i.Data.(AdminInstanceReprInterface); ok {
 		return repr.AdminInstanceRepr()
@@ -29,10 +33,12 @@ func (i *Instance) GetRepr() string {
 	return fmt.Sprint(i.Data)
 }
 
+// CreateViewLog creates a log entry when the instance is viewed.
 func (i *Instance) CreateViewLog(ctx interface{}) error {
 	return i.Model.App.Panel.Config.CreateLog(ctx, logging.LogStoreLevelInstanceView, fmt.Sprintf("%s | %s", i.Model.App.Name, i.Model.DisplayName), i.InstanceID, i.GetRepr(), "")
 }
 
+// CreateUpdateLog creates a log entry when the instance is updated.
 func (i *Instance) CreateUpdateLog(ctx interface{}, updates map[string]interface{}) error {
 	message, err := json.Marshal(updates)
 	if err != nil {
@@ -41,6 +47,7 @@ func (i *Instance) CreateUpdateLog(ctx interface{}, updates map[string]interface
 	return i.Model.App.Panel.Config.CreateLog(ctx, logging.LogStoreLevelUpdate, fmt.Sprintf("%s | %s", i.Model.App.Name, i.Model.DisplayName), i.InstanceID, i.GetRepr(), string(message))
 }
 
+// CreateCreateLog creates a log entry when the instance is created.
 func (i *Instance) CreateCreateLog(ctx interface{}) error {
 	message, err := json.Marshal(i.Data)
 	if err != nil {
@@ -49,22 +56,27 @@ func (i *Instance) CreateCreateLog(ctx interface{}) error {
 	return i.Model.App.Panel.Config.CreateLog(ctx, logging.LogStoreLevelCreate, fmt.Sprintf("%s | %s", i.Model.App.Name, i.Model.DisplayName), i.InstanceID, i.GetRepr(), string(message))
 }
 
+// CreateDeleteLog creates a log entry when the instance is deleted.
 func (i *Instance) CreateDeleteLog(ctx interface{}) error {
 	return i.Model.App.Panel.Config.CreateLog(ctx, logging.LogStoreLevelDelete, fmt.Sprintf("%s | %s", i.Model.App.Name, i.Model.DisplayName), i.InstanceID, i.GetRepr(), "")
 }
 
+// GetLink returns the relative URL to view the instance.
 func (i *Instance) GetLink() string {
 	return fmt.Sprintf("%s/%v/view", i.Model.GetLink(), i.InstanceID)
 }
 
+// GetFullLink returns the full URL to view the instance.
 func (i *Instance) GetFullLink() string {
 	return i.Model.App.Panel.Config.GetLink(i.GetLink())
 }
 
+// GetEditLink returns the relative URL to edit the instance.
 func (i *Instance) GetEditLink() string {
 	return fmt.Sprintf("%s/%v/edit", i.Model.GetLink(), i.InstanceID)
 }
 
+// GetFullEditLink returns the full URL to edit the instance.
 func (i *Instance) GetFullEditLink() string {
 	return i.Model.App.Panel.Config.GetLink(i.GetEditLink())
 }
@@ -186,11 +198,13 @@ func (m *Model) GetInstanceViewHandler() HandlerFunc {
 	}
 }
 
+// ModelAddForm represents the form used to add a new instance of a model.
 type ModelAddForm struct {
 	forms.BaseForm
 	Model *Model
 }
 
+// Save processes the form data and creates a new instance of the model.
 func (f *ModelAddForm) Save(values map[string]form.HTMLType) (interface{}, error) {
 	cleanValues, err := form.GetCleanData(f, values)
 	if err != nil {
@@ -245,12 +259,14 @@ func (f *ModelAddForm) Save(values map[string]form.HTMLType) (interface{}, error
 	return instancePtr.Interface(), nil
 }
 
+// ModelEditForm represents the form used to edit an existing instance of a model.
 type ModelEditForm struct {
 	forms.BaseForm
 	Model      *Model
 	InstanceID interface{}
 }
 
+// Save processes the form data and updates the existing instance of the model.
 func (f *ModelEditForm) Save(values map[string]form.HTMLType) (interface{}, error) {
 	cleanValues, err := form.GetCleanData(f, values)
 	if err != nil {
@@ -294,6 +310,7 @@ func (f *ModelEditForm) Save(values map[string]form.HTMLType) (interface{}, erro
 	return instancePtr.Interface(), nil
 }
 
+// NewAddForm creates a new form for adding an instance of the model.
 func (m *Model) NewAddForm() (form.Form, error) {
 	f := &ModelAddForm{
 		Model: m,
@@ -312,6 +329,7 @@ func (m *Model) NewAddForm() (form.Form, error) {
 	return f, nil
 }
 
+// NewEditForm creates a new form for editing an existing instance of the model.
 func (m *Model) NewEditForm(instanceID interface{}) (form.Form, error) {
 	f := &ModelEditForm{
 		Model:      m,
@@ -331,6 +349,7 @@ func (m *Model) NewEditForm(instanceID interface{}) (form.Form, error) {
 	return f, nil
 }
 
+// GetAddHandler returns the HTTP handler function for adding a new instance.
 func (m *Model) GetAddHandler() HandlerFunc {
 	return func(data interface{}) (uint, string) {
 		allowed, err := m.App.Panel.PermissionChecker.HasModelCreatePermission(m.App.Name, m.Name, data)
@@ -449,6 +468,7 @@ func (m *Model) GetAddHandler() HandlerFunc {
 	}
 }
 
+// GetEditHandler returns the HTTP handler function for editing an existing instance.
 func (m *Model) GetEditHandler() HandlerFunc {
 	return func(data interface{}) (uint, string) {
 		instanceIDStr := m.App.Panel.Web.GetPathParam(data, "id")
