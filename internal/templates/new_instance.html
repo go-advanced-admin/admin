@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>{{ .model.DisplayName }} administration</title>
+        <link rel="stylesheet" href="{{ assetPath "sample.css" }}">
+        <script src="https://unpkg.com/htmx.org@1.9.3"></script>
+    </head>
+    <body>
+        <p><a href="{{ .model.App.Panel.GetFullLink }}">Home</a> > <a href="{{ .model.App.GetFullLink }}">{{ .model.App.DisplayName }}</a> > <a href="{{ .model.GetFullLink }}">{{ .model.DisplayName }}</a> > instance</p>
+        <h2>Models Sidepanel</h2>
+        <ul>
+            {{ range .apps }}
+                <li><a href="{{ .app.GetFullLink }}">{{ .app.DisplayName }}</a>
+                    <ul>
+                        {{ range .models }}
+                            {{ if .permissions.Read }}
+                                <li><a href="{{ .model.GetFullLink }}">{{ .model.DisplayName }}</a>  -- <a href="{{ .model.GetFullLink }}">View</a>{{ if .permissions.Create }}  -- <a href="{{ .model.GetFullAddLink }}">Add</a>{{ end }}</li>
+                            {{ end }}
+                        {{ end }}
+                    </ul>
+                </li>
+            {{ end }}
+        </ul>
+        <h2>New {{ .model.DisplayName }}</h2>
+        <form method="post" action="{{ .model.GetFullAddLink }}">
+            {{ formAsP .form .formErrs .fieldErrs }}
+            <button type="submit">Submit</button>
+        </form>
+    </body>
+</html>
