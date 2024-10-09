@@ -27,7 +27,7 @@ func (ap *AdminPanel) GetLogEntries(ctx interface{}, maxCount uint) []*logging.L
 	if err != nil {
 		return []*logging.LogEntry{}
 	}
-	entries = entries[:min(uint(len(entries)), maxCount)]
+	entries = entries[:utils.MinInt(len(entries), int(maxCount))]
 	permissibleEntries := make([]*logging.LogEntry, 0)
 	for _, entry := range entries {
 		allowed, err := ap.PermissionChecker.HasLogViewPermission(ctx, entry.ID)
