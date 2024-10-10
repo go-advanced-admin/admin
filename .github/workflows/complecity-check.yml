@@ -1,0 +1,28 @@
+name: Complexity Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  complexity:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+
+      - name: Install gocyclo
+        run: go install github.com/fzipp/gocyclo/cmd/gocyclo@latest
+
+      - name: Run gocyclo
+        run: gocyclo -over 20 ./internal/... || exit 1
+
+      - name: Fail on high complexity
+        if: failure()
+        run: echo "One or more functions exceed the permissible complexity threshold of 20."
