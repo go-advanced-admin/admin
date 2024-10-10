@@ -21,7 +21,7 @@ jobs:
         run: go install github.com/fzipp/gocyclo/cmd/gocyclo@latest
 
       - name: Run gocyclo
-        run: gocyclo -over 20 ./internal/... || exit 1
+        run: gocyclo -over 20 ./... || exit 1
 
       - name: Fail on high complexity
         if: failure()
